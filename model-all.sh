@@ -200,14 +200,14 @@ ID="${array[10]}"
 		CIRTERIA_INT=22
 		echo "# frequency is between 420 and 440 and a 100 KHz Channel"
 		echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference"
+		echo "# $CALL $FREQ is $CHAN_SIZE and emission is $EM1"
 	elif (( $(echo "${array[4]} > 420.0000"|bc -l) )) &&  (( $(echo "${array[4]} < 440.0000" |bc -l) )) && [[ $CHAN_SIZE == '8000.000' ]]
 		then
 		CRITERIA_SVC=45
 		CIRTERIA_INT=22
 		echo "# frequency is between 420 and 440 and a 8 MHz Channel"
 		echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference"
-
-
+		echo "# $CALL $FREQ is $CHAN_SIZE and emission is $EM1"
 	
 	elif (( $(echo "${array[4]} > 420.0000"|bc -l) )) &&  (( $(echo "${array[4]} < 450.0000" |bc -l) ))
 		then
