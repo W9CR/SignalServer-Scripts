@@ -18,7 +18,7 @@ REL_INF='10'
 REL_ADJ='10'
 REL_ADJ1='10'
 REL_ADJ2='10'
-# Confidance 
+# Confidence 
 CONF='50'
 #Suffix for the type of file this is
 SUFFIX_SVC='Service'
@@ -43,7 +43,7 @@ POSITIONAL=()
 while [[ $# -gt 0 ]]
 	do
 	key="$1"
-	case $key in
+	case ${key} in
 		-id)
 		ID="$2"
 		shift # past argument=value
@@ -77,12 +77,12 @@ set -- "${POSITIONAL[@]}" # restore positional parameters
 
 if [[ ! -z ${FREQ_LOW} && ! -z ${FREQ_HIGH} ]]
 then
-	echo FREQ_LOW \"$FREQ_LOW\"
-	echo FREQ_HIGH \"$FREQ_HIGH\"
+	echo FREQ_LOW \"${FREQ_LOW}\"
+	echo FREQ_HIGH \"${FREQ_HIGH}\"
 	Query="SELECT Latitude, Longitude, antenna_Height_Meters , ERP,  Output_frequency, 
   REPLACE(Repeater_city, ' ','-') AS City, Repeater_callsign,  emission_1, emission_2, 
   COORDINATED, chan_Size_kHz, record_ID
-  FROM filemaker  WHERE Output_frequency BETWEEN '$FREQ_LOW' AND '$FREQ_HIGH' AND COORDINATED = '1' 
+  FROM filemaker  WHERE Output_frequency BETWEEN '${FREQ_LOW}' AND '${FREQ_HIGH}' AND COORDINATED = '1' 
   ORDER BY  Output_frequency ;"
 	echo "$Query"
 	mysql import -e "$Query" -NB | tr '\t' '|' >"$TMP_FILE"
@@ -113,24 +113,24 @@ ID="${array[10]}"
 	if (( $(echo "${array[4]} > 29.5000"|bc -l) )) &&  (( $(echo "${array[4]} < 29.7000" |bc -l) ))
 		then
 		CRITERIA_SVC=31
-		CIRTERIA_INT=13
+		CRITERIA_INT=13
 		echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference"
 		echo "# frequency is between 29.5000 and 29.7000"
 
 	elif (( $(echo "${array[4]} > 50.0000"|bc -l) )) &&  (( $(echo "${array[4]} < 54.0000" |bc -l) ))
 		then
 		CRITERIA_SVC=31
-		CIRTERIA_INT=13
+		CRITERIA_INT=13
 		echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference"
 		echo "# frequency is between 50 and 54 "
 
 	elif (( $(echo "${array[4]} > 144.0000"|bc -l) )) &&  (( $(echo "${array[4]} < 146.0000" |bc -l) ))
 		then 
 		echo "# frequency is between 144 and 146"
-			if [[ $CHAN_SIZE == '20.000' ]] 
+			if [[ ${CHAN_SIZE} == '20.000' ]] 
 			then
 				CRITERIA_SVC=37
-				CIRTERIA_INT=19
+				CRITERIA_INT=19
 				echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference"
 				echo "# $CALL $FREQ is wideband $CHAN_SIZE"
 
@@ -140,7 +140,7 @@ ID="${array[10]}"
 				case $EM1 in 
 					9K36F7W|9K80D7W|11K2F3E)
 					CRITERIA_SVC=37
-					CIRTERIA_INT=19
+					CRITERIA_INT=19
 					CRITERIA_ADJ1=25
 					echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference, $CRITERIA_INT dBu (50,10 Adjacent."
 					echo "# $CALL $FREQ is Narrowband $CHAN_SIZE but $EM1 is wider than 8 KHz"
@@ -149,7 +149,7 @@ ID="${array[10]}"
 					# adjacent not needed for <8 khz emissions      
 					150HA1A|2K80J3E|4K00F1E|6K00A3E|6K25F7W|7K60FXE|8K10F1E|8K30F1E)
 					CRITERIA_SVC=37
-					CIRTERIA_INT=19
+					CRITERIA_INT=19
 					echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference"
 					echo "# $CALL $FREQ is Narrowband $CHAN_SIZE and $EM1 is narrower than 8 KHz"
 					;;
@@ -165,13 +165,13 @@ ID="${array[10]}"
 			if [[ $CHAN_SIZE == '15.000' ]] 
 			then
 				CRITERIA_SVC=37
-				CIRTERIA_INT=19
+				CRITERIA_INT=19
 				echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference"
 				echo "# $CALL $FREQ is wideband $CHAN_SIZE"
 			elif [[ $CHAN_SIZE == '7.500' ]] 
 			then 
 				CRITERIA_SVC=37
-				CIRTERIA_INT=19
+				CRITERIA_INT=19
 				CRITERIA_ADJ1=44
 				CRITERIA_ADJ2=25
 				echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference"
@@ -186,7 +186,7 @@ ID="${array[10]}"
 			if [[ $CHAN_SIZE == '20.000' ]] 
 				then
 					CRITERIA_SVC=37
-					CIRTERIA_INT=19
+					CRITERIA_INT=19
 					echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference"
 					echo "# $CALL $FREQ is wideband $CHAN_SIZE"
 			elif [[ $CHAN_SIZE == '10.000' ]] 
@@ -195,7 +195,7 @@ ID="${array[10]}"
 				case $EM1 in 
 					9K36F7W|9K80D7W|11K2F3E)
 					CRITERIA_SVC=37
-					CIRTERIA_INT=19
+					CRITERIA_INT=19
 					CRITERIA_ADJ1=25
 					echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference, $CRITERIA_INT dBu (50,10 Adjacent."
 					echo "# $CALL $FREQ is Narrowband $CHAN_SIZE but $EM1 is wider than 8 KHz"
@@ -204,7 +204,7 @@ ID="${array[10]}"
 					# adjacent not needed for <8 khz emissions      
 					150HA1A|2K80J3E|4K00F1E|6K00A3E|6K25F7W|7K60FXE|8K10F1E|8K30F1E)
 					CRITERIA_SVC=37
-					CIRTERIA_INT=19
+					CRITERIA_INT=19
 					echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference"
 					echo "# $CALL $FREQ is Narrowband $CHAN_SIZE and $EM1 is narrower than 8 KHz"
 					;;
@@ -216,14 +216,14 @@ ID="${array[10]}"
 	elif (( $(echo "${array[4]} > 420.0000"|bc -l) )) &&  (( $(echo "${array[4]} < 440.0000" |bc -l) )) && [[ $CHAN_SIZE == '100.000' ]]
 		then
 		CRITERIA_SVC=40
-		CIRTERIA_INT=22
+		CRITERIA_INT=22
 		echo "# frequency is between 420 and 440 and a 100 KHz Channel"
 		echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference"
 		echo "# $CALL $FREQ is $CHAN_SIZE and emission is $EM1"
 	elif (( $(echo "${array[4]} > 420.0000"|bc -l) )) &&  (( $(echo "${array[4]} < 440.0000" |bc -l) )) && [[ $CHAN_SIZE == '8000.000' ]]
 		then
 		CRITERIA_SVC=45
-		CIRTERIA_INT=22
+		CRITERIA_INT=22
 		echo "# frequency is between 420 and 440 and a 8 MHz Channel"
 		echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference"
 		echo "# $CALL $FREQ is $CHAN_SIZE and emission is $EM1"
@@ -233,14 +233,14 @@ ID="${array[10]}"
 			if [[ $CHAN_SIZE == '25.000' ]] 
 			then
 				CRITERIA_SVC=39
-				CIRTERIA_INT=21
+				CRITERIA_INT=21
 				echo "# frequency is between 420 and 450 and a 25 KHz Channel"
 				echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference"
 				echo "# $CALL $FREQ is wideband $CHAN_SIZE"
 			elif [[ $CHAN_SIZE == '12.500' ]] 
 			then 
 				CRITERIA_SVC=39
-				CIRTERIA_INT=21
+				CRITERIA_INT=21
 				echo "# frequency is between 420 and 450 and a 12.5 KHz Channel"
 				echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference"
 				echo "# $CALL $FREQ is NarrowBand $CHAN_SIZE"
@@ -252,14 +252,14 @@ ID="${array[10]}"
 			if [[ $CHAN_SIZE == '25.000' ]] 
 			then
 				CRITERIA_SVC=40
-				CIRTERIA_INT=22
+				CRITERIA_INT=22
 				echo "# frequency is between 902 and 928 and a 25 KHz Channel"
 				echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference"
 				echo "# $CALL $FREQ is wideband $CHAN_SIZE"
 			elif [[ $CHAN_SIZE == '12.500' ]] 
 			then 
 				CRITERIA_SVC=40
-				CIRTERIA_INT=22
+				CRITERIA_INT=22
 				echo "# frequency is between 902 and 928 and a 12.5 KHz Channel"
 				echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference"
 				echo "# $CALL $FREQ is NarrowBand $CHAN_SIZE"
@@ -269,14 +269,14 @@ ID="${array[10]}"
 			if [[ $CHAN_SIZE == '50.000' ]] 
 			then
 				CRITERIA_SVC=40
-				CIRTERIA_INT=22
+				CRITERIA_INT=22
 				echo "# frequency is between 1240 and 1300 and a 50 KHz Channel"
 				echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference"
 				echo "# $CALL $FREQ is wideband $CHAN_SIZE"
 			elif [[ $CHAN_SIZE == '100.000' ]] 
 			then 
 				CRITERIA_SVC=40
-				CIRTERIA_INT=22
+				CRITERIA_INT=22
 				echo "# frequency is between 1240 and 1300 and a 100 KHz Channel"
 				echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference"
 				echo "# $CALL $FREQ is NarrowBand $CHAN_SIZE"
@@ -291,7 +291,7 @@ done < "$TMP_FILE"
 
 function SERVICE {
 
-SUFFIX=$SUFFIX_SVC
+SUFFIX=${SUFFIX_SVC}
 
 time nice /usr/local/bin/signalserver -sdf $SDFDIR -rxh 1.83 -rxg 2.15 -m -pe 3 -cl 3 -te 3 -R $DISTANCE -res 600 \
      	-pm 1 -rel $REL_SVC -f $FREQ -conf $CONF -color $COLOR_SVC -rt $CRITERA_SVC -dbg -lat $LAT -lon $LON -txh $TXH \
