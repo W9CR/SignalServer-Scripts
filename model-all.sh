@@ -337,10 +337,13 @@ EOF
 )"
 }
 
-
+#
+# TODO: not sure where the VARs in func. INTERFERENCE are coming from
+#       or how namespaces work in bash or that you could have function calls in bash
+#
 function INTERFERENCE {
 
-SUFFIX=$SUFFIX_INF
+SUFFIX=${SUFFIX_INF}
 
 time nice /usr/local/bin/signalserver -sdf $SDFDIR -rxh 1.83 -rxg 2.15 -m -pe 3 -cl 3 -te 3 -R $DISTANCE -res 600 \
         -pm 1 -rel $REL_INF -f $FREQ -conf $CONF -color $COLOR_INF -rt $CRITERA_INF -dbg -lat $LAT -lon $LON -txh $TXH \
@@ -389,15 +392,15 @@ EOF
 function ADJACENT {
 
 
-SUFFIX=$SUFFIX_ADJ
+SUFFIX=${SUFFIX_ADJ}
 
 time nice /usr/local/bin/signalserver -sdf $SDFDIR -rxh 1.83 -rxg 2.15 -m -pe 3 -cl 3 -te 3 -R $DISTANCE -res 600 \
         -pm 1 -rel $REL_ADJ -f $FREQ -conf $CONF -color $COLOR_ADJ -rt $CRITERA_ADJ -dbg -lat $LAT -lon $LON -txh $TXH \
         -erp $ERP -o $OUTPUTFILE 2>&1 |
 while read line
         do
-        echo $line
-        if [[ $line == \|* ]]
+        echo ${line}
+        if [[ ${line} == \|* ]]
                 then
                 while IFS='|' read -ra coords
                 do
@@ -405,17 +408,17 @@ while read line
                         east_adj=${coords[2]}
                         south_adj=${coords[3]}
                         west_adj=${coords[4]}
-                done <<< $line
+                done <<< ${line}
         fi
 done
 # to resize, add: -resize 7000x7000\>
-echo NAME: $OUTPUTFILE"_"$SUFFIX
-filename_adj=$OUTPUTFILE"_"$SUFFIX.png
-echo FILENAME: $filename_adj
-convert $OUTPUTFILE.ppm -transparent white $filename_adj
+echo NAME: $OUTPUTFILE"_"${SUFFIX}
+filename_adj=$OUTPUTFILE"_"${SUFFIX}.png
+echo FILENAME: ${filename_adj}
+convert $OUTPUTFILE.ppm -transparent white ${filename_adj}
 rm $OUTPUTFILE.ppm
 
-echo filename is: $filename_adj ccords are $north_adj $east_adj $south_adj $west_adj
+echo filename is: ${filename_adj} ccords are ${north_adj} ${east_adj} ${south_adj} ${west_adj}
 
 ADJ_KML="$(cat << EOF 
 <GroundOverlay>
@@ -436,9 +439,9 @@ EOF
 }
 
 function make_file {
-zip $OUTPUTFILE.zip $filename_svc $filename_inf $filename_adj doc.kml
+zip $OUTPUTFILE.zip ${filename_svc} ${filename_inf} ${filename_adj} doc.kml
 mv $OUTPUTFILE.zip $OUTPUTFILE.kmz
-rm $filename_svc $filename_inf $filename_adj #doc.kml
+rm ${filename_svc} ${filename_inf} ${filename_adj} ${doc.kml}
 echo Generated $OUTPUTFILE.kmz
 }
 
@@ -448,7 +451,7 @@ LOC_KML=$(cat << EOF
  <description>${OUTPUTFILE}</description>
  <Point>
   <coordinates>
-   $LON, $LAT, 0 
+   ${LON}, ${LAT}, 0
   </coordinates>
  </Point> 
 </Placemark>
@@ -480,18 +483,15 @@ INTERFERENCE
 #echo "Doing Adjacent"
 #ADJACENT
 
-echo service filename is: $filename_svc coords are $north_svc $east_svc $south_svc $west_svc
+echo service filename is: ${filename_svc} coords are ${north_svc} ${east_svc} ${south_svc} ${west_svc}
 
-echo "$KML_HEAD" >doc.kml
-echo "$LOC_KML" >>doc.kml
-echo "$INF_KML" >>doc.kml
-echo "$SVC_KML" >>doc.kml
-#echo "$ADJ_KML" >>doc.kml
-echo "$KML_FOOT" >>doc.kml
+echo "${KML_HEAD}" >doc.kml
+echo "${LOC_KML}" >>doc.kml
+echo "${INF_KML}" >>doc.kml
+echo "${SVC_KML}" >>doc.kml
+#echo "${ADJ_KML}" >>doc.kml
+echo "${KML_FOOT}" >>doc.kml
 
-make_file 
+make_file
 
 exit
-
-
-
