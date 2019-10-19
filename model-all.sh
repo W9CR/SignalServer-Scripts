@@ -74,14 +74,30 @@ fi
 
 while IFS='|' read -a array
 do 
-echo "FREQ = ${array[4]}"
+
+0 Lat | 1 Long | 2 AGL | 3 ERP | 4 Freq | 5 City | 6 call | 7 em1 | 8 em2 | 9 COORDINATED | 10 chan_Size | 11 record_ID
+LAT="${array[0]}"
+LON="${array[1]}"
+AGL="${array[2]}"
+ERP="${array[3]}"
+FREQ="${array[4]}" 
+CITY="${array[5]}"
+CALL="${array[6]}"
+EM1="${array[7]}"
+EM2="${array[8]}"
+COORD="${array[9]}"
+CHAN_SIZE="${array[10]}"
+ID="${array[10]}"
+
         if (( $(echo "${array[4]} > 29.5000"|bc -l) )) &&  (( $(echo "${array[4]} < 29.7000" |bc -l) ))
                 then
-                echo frequency is between 29.5000 and 29.7000
-
+                echo "#frequency is between 29.5000 and 29.7000"
+		echo "#BUILD MODEL"
         elif (( $(echo "${array[4]} > 50.0000"|bc -l) )) &&  (( $(echo "${array[4]} < 54.0000" |bc -l) ))
                 then
                 echo frequency is between 50 and 54 
+		echo "#BUILD MODEL
+		
 	elif (( $(echo "${array[4]} > 144.0000"|bc -l) )) &&  (( $(echo "${array[4]} < 146.0000" |bc -l) ))
 		then 
 		echo frequency is between 144 and 146
