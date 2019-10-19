@@ -1,5 +1,5 @@
 #!/bin/bash
-
+# vim: ts=2 sw=2  
 set -e
 shopt -s lastpipe
 TMP_FILE="/tmp/db-query.txt"
@@ -19,38 +19,37 @@ TMP_FILE="/tmp/db-query.txt"
 
 POSITIONAL=()
 while [[ $# -gt 0 ]]
-do
-key="$1"
-case $key in
-        -id)
-        ID="$2"
-        shift # past argument=value
-        shift
-        ;;
-        -model)
-        MODEL='1'
-        shift
-        ;;
-        -noupdate)
-        NOUPDATE='1'
-        shift # past argument=value
-        ;;
-        -flow)
-        FREQ_LOW="$2"
-        shift # past argument=value
-        shift
-        ;;
-        -fhigh)
-        FREQ_HIGH="$2"
-        shift
-        shift # past argument=value
-        ;;
-
-        *)
-        POSITIONAL+=("$1") # save it in an array for later
-        shift # past argument
-        ;;
-esac
+	do
+	key="$1"
+	case $key in
+		-id)
+		ID="$2"
+		shift # past argument=value
+		shift
+		;;
+		-model)
+		MODEL='1'
+		shift
+		;;
+		-noupdate)
+		NOUPDATE='1'
+		shift # past argument=value
+		;;
+		-flow)
+		FREQ_LOW="$2"
+		shift # past argument=value
+		shift
+		;;
+		-fhigh)
+		FREQ_HIGH="$2"
+		shift
+		shift # past argument=value
+		;;
+		*)
+		POSITIONAL+=("$1") # save it in an array for later
+		shift # past argument
+		;;
+	esac
 done
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
@@ -58,11 +57,11 @@ if [[ ! -z ${FREQ_LOW} && ! -z ${FREQ_HIGH} ]]
 then
 	echo FREQ_LOW \"$FREQ_LOW\"
 	echo FREQ_HIGH \"$FREQ_HIGH\"
- 	Query="SELECT Latitude, Longitude, antenna_Height_Meters , ERP,  Output_frequency, 
-        REPLACE(Repeater_city, ' ','-') AS City, Repeater_callsign,  emission_1, emission_2, 
-	COORDINATED, chan_Size_kHz, record_ID
-        FROM filemaker  WHERE Output_frequency BETWEEN '$FREQ_LOW' AND '$FREQ_HIGH' AND COORDINATED = '1' 
-        ORDER BY  Output_frequency ;"
+	Query="SELECT Latitude, Longitude, antenna_Height_Meters , ERP,  Output_frequency, 
+  REPLACE(Repeater_city, ' ','-') AS City, Repeater_callsign,  emission_1, emission_2, 
+  COORDINATED, chan_Size_kHz, record_ID
+  FROM filemaker  WHERE Output_frequency BETWEEN '$FREQ_LOW' AND '$FREQ_HIGH' AND COORDINATED = '1' 
+  ORDER BY  Output_frequency ;"
 	echo "$Query"
 	mysql import -e "$Query" -NB | tr '\t' '|' >"$TMP_FILE"
 #	cat $TMP_FILE
@@ -157,19 +156,17 @@ ID="${array[10]}"
 				echo "# Narrow to Narrow adjacent is $CRITERIA_ADJ1 dBu (50,10), Narrow to Wide adjacent is $CRITERIA_ADJ2 dBu (50,10)"
 				echo "# $CALL $FREQ is wideband $CHAN_SIZE"
 				unset CRITERIA_ADJ1 && unset CRITERIA_ADJ2
-			fi		 	 
+			fi 
 
-        elif (( $(echo "${array[4]} > 222.0000"|bc -l) )) &&  (( $(echo "${array[4]} < 225.0000" |bc -l) ))
-                then
-                echo "# frequency is between 222 and 225"
+	elif (( $(echo "${array[4]} > 222.0000"|bc -l) )) &&  (( $(echo "${array[4]} < 225.0000" |bc -l) ))
+		then
+		echo "# frequency is between 222 and 225"
 			if [[ $CHAN_SIZE == '20.000' ]] 
-			then
-				CRITERIA_SVC=37
-				CIRTERIA_INT=19
-				echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference"
-				echo "# $CALL $FREQ is wideband $CHAN_SIZE"
-
-				echo "# $CALL $FREQ is wideband $CHAN_SIZE"
+				then
+					CRITERIA_SVC=37
+					CIRTERIA_INT=19
+					echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference"
+					echo "# $CALL $FREQ is wideband $CHAN_SIZE"
 			elif [[ $CHAN_SIZE == '10.000' ]] 
 			then 
 				#problem here, I'm only looking at emmision 1.  It should be the widest, but I don't like assuming it
@@ -208,7 +205,7 @@ ID="${array[10]}"
 		echo "# frequency is between 420 and 440 and a 8 MHz Channel"
 		echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference"
 		echo "# $CALL $FREQ is $CHAN_SIZE and emission is $EM1"
-	
+
 	elif (( $(echo "${array[4]} > 420.0000"|bc -l) )) &&  (( $(echo "${array[4]} < 450.0000" |bc -l) ))
 		then
 			if [[ $CHAN_SIZE == '25.000' ]] 
@@ -228,8 +225,8 @@ ID="${array[10]}"
 			fi		 	 
 
 
-        elif (( $(echo "${array[4]} > 902.0000"|bc -l) )) &&  (( $(echo "${array[4]} < 928.0000" |bc -l) ))
-                then
+	elif (( $(echo "${array[4]} > 902.0000"|bc -l) )) &&  (( $(echo "${array[4]} < 928.0000" |bc -l) ))
+		then
 			if [[ $CHAN_SIZE == '25.000' ]] 
 			then
 				CRITERIA_SVC=40
