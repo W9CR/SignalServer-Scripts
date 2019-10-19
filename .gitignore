@@ -1,9 +1,4 @@
 *.scf 
-*.lcf 
-*.dcf
-inputimage.php
-config.php
-circle.php
 *.png
 *.kmz
 *.kml
