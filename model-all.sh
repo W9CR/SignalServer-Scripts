@@ -96,11 +96,30 @@ ID="${array[10]}"
         elif (( $(echo "${array[4]} > 50.0000"|bc -l) )) &&  (( $(echo "${array[4]} < 54.0000" |bc -l) ))
                 then
                 echo frequency is between 50 and 54 
-		echo "#BUILD MODEL
+		echo "#BUILD MODEL"
 		
 	elif (( $(echo "${array[4]} > 144.0000"|bc -l) )) &&  (( $(echo "${array[4]} < 146.0000" |bc -l) ))
 		then 
 		echo frequency is between 144 and 146
+			if [[ $CHAN_SIZE='20.000' ]] 
+			then
+				echo $CALL $FREQ is wideband $CHAN_SIZE
+			elif [[ $CHAN_SIZE='10.000' ]] 
+				echo $CALL $FREQ is Narrowband $CHAN_SIZE
+				case $EM1 in 
+					9K36F7W|9K80D7W|11K2F3E)
+					echo $CALL $FREQ is Narrowband $CHAN_SIZE but wider tha 8 KHz
+        				;;
+			        	# adjacent not needed for <8 khz emissions      
+        				150HA1A|2K80J3E|4K00F1E|6K00A3E|6K25F7W|7K60FXE|8K10F1E|8K30F1E)
+        				echo $CALL $FREQ is Narrowband $CHAN_SIZE and below 8KHz
+					;;
+        				*)
+					echo $CALL $FREQ is Narrowband $CHAN_SIZE but some error >&2
+					exit 1
+        				;;
+        			esac
+			 	 
 	elif (( $(echo "${array[4]} > 146.0000"|bc -l) )) &&  (( $(echo "${array[4]} < 148.0000" |bc -l) ))		
 		then
 		echo frequency is between 146 and 148
