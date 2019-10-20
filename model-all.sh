@@ -387,9 +387,9 @@ Service Criteria: ${CRITERIA_SVC} dBu (50,50)
 Service Contour: ${SVC_RING} km
 Interference/Adjacent Criteria: ${CRITERIA_INT} dBu (50,10)
 Interference Contour: ${INT_RING} km
-Adjacent Contour: km 
-Adjacent-Narrow : km
-Adjacent-Wide 	: km
+Adjacent Contour: ${ADJ1_RING} km 
+Adjacent-Narrow : ${ADJ1_RING} km
+Adjacent-Wide 	: ${ADJ2_RING} km
 Note: 
 Adjacent Contours are only used in certian cases.
 </pre>
@@ -732,8 +732,8 @@ MOD_NAME="${array[18]}"
 				echo "${KML_HEAD}" >doc.kml
 				echo "${LOC_KML}" >>doc.kml
 				echo "${INF_KML}" >>doc.kml
-				echo "${ADJ_KML}" >>doc.kml
 				echo "${SVC_KML}" >>doc.kml
+				echo "${ADJ_KML}" >>doc.kml
 				echo "${KML_FOOT}" >>doc.kml
 				echo "BUILDING KMZ"
 				MAKE_FILE
@@ -786,9 +786,9 @@ MOD_NAME="${array[18]}"
 				echo "${KML_HEAD}" >doc.kml
 				echo "${LOC_KML}" >>doc.kml
 				echo "${INF_KML}" >>doc.kml
-				echo "${ADJ2_KML}" >>doc.kml
+				echo "${ADJ_KML2}" >>doc.kml
 				echo "${SVC_KML}" >>doc.kml 
-				echo "${ADJ1_KML}" >>doc.kml 
+				echo "${ADJ_KML1}" >>doc.kml 
 				echo "${KML_FOOT}" >>doc.kml
 				echo "BUILDING KMZ"
 				MAKE_FILE
@@ -1097,7 +1097,6 @@ MOD_NAME="${array[18]}"
 						echo "NOT UPDATING DB"
 				fi
 				echo "DONE"
-	
 		
 		elif [[ $CHAN_SIZE == '12.500' ]] 
 			then 
@@ -1331,8 +1330,9 @@ MOD_NAME="${array[18]}"
 				fi
 				echo "DONE"
 			fi
-		fi			 	 
+					 	 
 	else echo frequency ${array[4]} of record number ${array[4]} is out of bounds
+fi
 done < "$TMP_FILE"
 # rm "$TMP_FILE"
 
