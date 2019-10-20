@@ -4,13 +4,9 @@ set -e
 shopt -s lastpipe
 TMP_FILE="/tmp/db-query.txt"
 
-# ./144-146-WB.sh -lat 27.60 -lon -80.39 -txh 73.15 -erp 210 -o 145.1300_AB4AX_Vero-Beach
-#file='/tmp/145mhz.txt'
-# 0 Lat | 1 Long | 2 AGL | 3 ERP | 4 Freq | 5 City | 6 call | emission
-
 # This will run through all models as a query from the db
 
-
+SDFDIR=/home/SignalServer/sdf
 
 # Global defines for Signal Server, these don't change
 REL_SVC='50'
@@ -24,8 +20,8 @@ CONF='50'
 SUFFIX_SVC='Service'
 SUFFIX_INF='Interference'
 SUFFIX_ADJ='Adjacent'
-SUFFIX_ADJ1='To-Narrow-Adjacent'
-SUFFIX_ADJ2='To-Wide-Adjacent'
+SUFFIX_ADJ1='Adjacent-Narrow'
+SUFFIX_ADJ2='Adjacent-Wide'
 #color file
 COLOR_SVC='blueblue'
 COLOR_INF='green'
@@ -34,6 +30,9 @@ COLOR_ADJ1='yellow'
 COLOR_ADJ2='magenta'
 #BASE DIR
 BASE_DIR='/home/SignalServer/plots'
+
+#default for NODUPDATE
+NOUPDATE='0'
 
 # Options 
 # -id database ID
@@ -47,13 +46,13 @@ while [[ $# -gt 0 ]]
 	do
 	key="$1"
 	case ${key} in
-		-id)
-		ID="$2"
+		-id) #db ID to model
+		RECORD_ID="$2"
 		shift # past argument=value
 		shift
 		;;
-		-model)
-		MODEL='1'
+		-input) #input file name
+		INPUT_FILE="$2"
 		shift
 		;;
 		-noupdate)
@@ -78,7 +77,9 @@ while [[ $# -gt 0 ]]
 done
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
-if [[ ! -z ${FREQ_LOW} && ! -z ${FREQ_HIGH} ]]
+#Below is run to match the DB
+
+if [[ ! -z ${FREQ_LOW} && ! -z ${FREQ_HIGH} ]] 
 then
 	echo FREQ_LOW \"${FREQ_LOW}\"
 	echo FREQ_HIGH \"${FREQ_HIGH}\"
@@ -92,7 +93,26 @@ then
 #	cat $TMP_FILE
 elif [[ ! -z ${FREQ_LOW+x} || ! -z ${FREQ_HIGH+x} ]]
 then 
-	echo FREQ_LOW or FREQ_HIGH must be set
+	echo FREQ_LOW and FREQ_HIGH must be set
+fi
+
+# model only one record ID
+
+if [[ ! -z ${RECORD_ID} ]]
+then
+	Query="SELECT Latitude, Longitude, antenna_Height_Meters , ERP,  Output_frequency, 
+  REPLACE(Repeater_city, ' ','-') AS City, Repeater_callsign,  emission_1, emission_2, 
+  COORDINATED, chan_Size_kHz, record_ID, Service_Ring_km, Interference_Ring_km, adj1_ring_km, adj2_ring_km, modeled, model_Required, model_Name
+  FROM filemaker  WHERE record_ID = '${RECORD_ID}';"
+	echo "$Query"
+	mysql import -e "$Query" -NB | tr '\t' '|' >"$TMP_FILE"
+fi
+
+#Take an input file and model it
+#will this overwrite another file?  idk
+if [[ ! -z ${INPUT_FILE} ]]
+then
+	TMP_FILE="${INPUT_FILE}"
 fi
 
 function SERVICE {
@@ -100,8 +120,8 @@ function SERVICE {
 SUFFIX=${SUFFIX_SVC}
 
 time nice /usr/local/bin/signalserver -sdf $SDFDIR -rxh 1.83 -rxg 2.15 -m -pe 3 -cl 3 -te 3 -R $DISTANCE -res 600 \
-     	-pm 1 -rel $REL_SVC -f $FREQ -conf $CONF -color $COLOR_SVC -rt $CRITERA_SVC -dbg -lat $LAT -lon $LON -txh $TXH \
-	-erp $ERP -o $OUTPUTFILE 2>&1 | 
+     	-pm 1 -rel $REL_SVC -f $FREQ -conf $CONF -color $COLOR_SVC -rt ${CRITERIA_SVC} -dbg -lat $LAT -lon $LON -txh $TXH \
+	-erp $ERP -o $OUTPUTNAME 2>&1 | 
 while read line
 	do
 	echo $line
@@ -117,17 +137,17 @@ while read line
 	fi
 done 
 # to resize, add: -resize 7000x7000\>
-echo "NAME: ${OUTPUTFILE}_${SUFFIX}"
-filename_svc=${OUTPUTFILE}_${SUFFIX}.png
-echo FILENAME: ${filename}
-convert ${OUTPUTFILE}.ppm -transparent white ${filename_svc}
-rm ${OUTPUTFILE}.ppm
+echo "NAME: ${OUTPUTNAME}_${SUFFIX}"
+filename_svc=${OUTPUTNAME}_${SUFFIX}.png
+echo FILENAME: ${filename_svc}
+convert ${OUTPUTNAME}.ppm -transparent white ${filename_svc}
+rm ${OUTPUTNAME}.ppm
 
 echo filename is: ${filename_svc} ccords are ${north_svc} ${east_svc} ${south_svc} ${west_svc}
 
 SVC_KML="$(cat << EOF 
 <GroundOverlay>
-    <name>${OUTPUTFILE}_${SUFFIX}</name>
+    <name>${SUFFIX} ${FREQ} ${CALL}</name>
     <color>a0ffffff</color>
     <Icon>
         <href>${filename_svc}</href>
@@ -148,8 +168,8 @@ function INTERFERENCE {
 SUFFIX=${SUFFIX_INF}
 
 time nice /usr/local/bin/signalserver -sdf $SDFDIR -rxh 1.83 -rxg 2.15 -m -pe 3 -cl 3 -te 3 -R $DISTANCE -res 600 \
-        -pm 1 -rel $REL_INF -f $FREQ -conf $CONF -color $COLOR_INF -rt $CRITERA_INF -dbg -lat $LAT -lon $LON -txh $TXH \
-        -erp $ERP -o $OUTPUTFILE 2>&1 |
+        -pm 1 -rel $REL_INF -f $FREQ -conf $CONF -color $COLOR_INF -rt ${CRITERIA_INF} -dbg -lat $LAT -lon $LON -txh $TXH \
+        -erp $ERP -o $OUTPUTNAME 2>&1 |
 while read line
         do
         echo $line
@@ -165,17 +185,17 @@ while read line
         fi
 done
 # to resize, add: -resize 7000x7000\>
-echo NAME: ${OUTPUTFILE}_${SUFFIX}
-filename_inf=${OUTPUTFILE}_${SUFFIX}.png
+echo NAME: ${OUTPUTNAME}_${SUFFIX}
+filename_inf=${OUTPUTNAME}_${SUFFIX}.png
 echo FILENAME: ${filename_inf}
-convert ${OUTPUTFILE}.ppm -transparent white ${filename_inf}
-rm ${OUTPUTFILE}.ppm
+convert ${OUTPUTNAME}.ppm -transparent white ${filename_inf}
+rm ${OUTPUTNAME}.ppm
 
 echo filename is: ${filename_inf} coords are ${north_inf} ${east_inf} ${south_inf} ${west_inf}
 
 INF_KML="$(cat << EOF 
 <GroundOverlay>
-    <name>${OUTPUTFILE}_${SUFFIX}</name>
+    <name>${SUFFIX} ${FREQ} ${CALL}</name>
     <color>a0ffffff</color>
     <Icon>
         <href>${filename_inf}</href>
@@ -197,8 +217,8 @@ function ADJACENT {
 SUFFIX=${SUFFIX_ADJ}
 
 time nice /usr/local/bin/signalserver -sdf $SDFDIR -rxh 1.83 -rxg 2.15 -m -pe 3 -cl 3 -te 3 -R $DISTANCE -res 600 \
-        -pm 1 -rel $REL_ADJ -f $FREQ -conf $CONF -color $COLOR_ADJ -rt $CRITERA_ADJ -dbg -lat $LAT -lon $LON -txh $TXH \
-        -erp $ERP -o $OUTPUTFILE 2>&1 |
+        -pm 1 -rel $REL_ADJ -f $FREQ -conf $CONF -color $COLOR_ADJ -rt ${CRITERIA_ADJ} -dbg -lat $LAT -lon $LON -txh $TXH \
+        -erp $ERP -o $OUTPUTNAME 2>&1 |
 while read line
         do
         echo ${line}
@@ -214,17 +234,17 @@ while read line
         fi
 done
 # to resize, add: -resize 7000x7000\>
-echo NAME: ${OUTPUTFILE}_${SUFFIX}
-filename_adj=${OUTPUTFILE}_${SUFFIX}.png
+echo NAME: ${OUTPUTNAME}_${SUFFIX}
+filename_adj=${OUTPUTNAME}_${SUFFIX}.png
 echo FILENAME: ${filename_adj}
-convert $OUTPUTFILE.ppm -transparent white ${filename_adj}
-rm $OUTPUTFILE.ppm
+convert $OUTPUTNAME.ppm -transparent white ${filename_adj}
+rm $OUTPUTNAME.ppm
 
 echo filename is: ${filename_adj} ccords are ${north_adj} ${east_adj} ${south_adj} ${west_adj}
 
 ADJ_KML="$(cat << EOF 
 <GroundOverlay>
-    <name>${OUTPUTFILE}_${SUFFIX}</name>
+    <name>${SUFFIX} ${FREQ} ${CALL}</name>
     <color>a0ffffff</color>
     <Icon>
         <href>${filename_adj}</href>
@@ -241,39 +261,55 @@ EOF
 }
 
 function MAKE_FILE {
-zip ${OUTPUTFILE}.zip ${filename_svc} ${filename_inf} ${filename_adj} ${filename_adj1} ${filename_adj2} doc.kml
-mv ${OUTPUTFILE}.zip ${OUTPUTFILE}.kmz
+zip ${OUTPUTNAME}.zip ${filename_svc} ${filename_inf} ${filename_adj} ${filename_adj1} ${filename_adj2} doc.kml
+mv ${OUTPUTNAME}.zip ${OUTPUTNAME}.kmz
 #rm ${filename_svc} ${filename_inf} ${filename_adj} ${filename_adj1} ${filename_adj2} doc.kml
-echo Generated ${OUTPUTFILE}.kmz
+echo Generated ${OUTPUTNAME}.kmz
 }
 
-LOC_KML=$(cat << EOF
+#this function builds the placemark part of the KML.  
+function BUILD_LOC_KML {
+LOC_KML="$(cat << EOF
 <Placemark> 
- <name>${OUTPUTFILE}</name> 
+ <name>${FREQ} ${CALL} ${CITY}</name> 
   <description><![CDATA[<pre>
+RECORD: ${ID}
 CALL: ${CALL}
 CITY: ${CITY}
 FREQ: ${FREQ} 
-ERP: ${ERP}          AGL: ${AGL}m
-LAT: ${LAT}          LON: ${LON}
-EM1: ${EM1}          EM2: ${EM2}
-Service Criteria: ${CRITERIA_SVC} dBu "(50,50)"
-Interference Criteria: ${CRITERIA_INT} dBu "(50,10)"
+STATUS: ${COORD}
+ERP: ${ERP}		AGL: ${TXH} m
+LAT: ${LAT}		LON: ${LON}
+EM1: ${EM1}		EM2: ${EM2}
+Channel Size: ${CHAN_SIZE} kHz
+Service Criteria: ${CRITERIA_SVC} dBu (50,50)  
+Service Contour: 
+Interference Criteria: ${CRITERIA_INT} dBu (50,10)
+Interference Contour:
 </pre>
 <br>
 <a href=https://plots.fasma.org>Plots of all Coordinated repeaters in FASMA Database</a>
-<br>
+<br><br>
 <a href=https://fasma.org>fasma.org</a>  
 ]]></description>
 
-	<Point>
+<Point>
   <coordinates>
    ${LON}, ${LAT}, 0
   </coordinates>
  </Point> 
 </Placemark>
 EOF
-)
+)"
+}
+
+function UPDATE_DB {
+	WEB_PATH="$(echo ${OUTPUT_DIR}/${OUTPUTNAME}.kmz |sed 's/\/home\/SignalServer\/plots//g')"
+	Query="UPDATE filemaker SET modeled = '1', model_Required = '0', model_Name ='https://plots.fasma.org${WEB_PATH}' where record_ID ='${ID}';"
+	echo "$Query"
+	mysql import -e "${Query}" -NB 
+}
+	
 
 KML_HEAD=$(cat <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
@@ -290,7 +326,7 @@ EOF
 
 
 
-
+#this is the main loop for the program and the coordination logic
 
 
 while IFS='|' read -a array
@@ -300,14 +336,19 @@ do
 #12 Service_Ring_km | 13 Interference_Ring_km | 14 adj1_ring_km | 15 adj2_ring_km | 16 modeled | 17 model_Required | 18  model_Name
 LAT="${array[0]}"
 LON="${array[1]}"
-AGL="${array[2]}"
+TXH="${array[2]}"
 ERP="${array[3]}"
 FREQ="${array[4]}" 
 CITY="${array[5]}"
 CALL="${array[6]}"
 EM1="${array[7]}"
 EM2="${array[8]}"
-COORD="${array[9]}"
+if [[ ${array[9]} = 1 ]]
+	then
+	COORD="COORDINATED"
+	else
+	COORD="UNCOORDINATED"
+fi
 CHAN_SIZE="${array[10]}"
 ID="${array[11]}"
 SVC_RING="${array[12]}"
@@ -320,9 +361,9 @@ MOD_NAME="${array[18]}"
 
 	if (( $(echo "${array[4]} > 29.5000"|bc -l) )) &&  (( $(echo "${array[4]} < 29.7000" |bc -l) ))
 		then
-		DISTANCE='300km' # Distance needs to be wider for lowband
-		CRITERIA_SVC=31
-		CRITERIA_INT=13
+		DISTANCE='30km' # Distance needs to be wider for lowband
+		CRITERIA_SVC='31'
+		CRITERIA_INT='13'
 		OUTPUTNAME=${FREQ}_${CALL}_${CITY}_${ID} # This is be base name of the file
 		#The output directory 
 		OUTPUT_DIR="${BASE_DIR}/29"
@@ -337,18 +378,24 @@ MOD_NAME="${array[18]}"
 		echo "DOING INTERFERENCE"
 		INTERFERENCE
 		echo "BUILDING KML"
+		BUILD_LOC_KML
+		#make the doc.xml file
 		echo "${KML_HEAD}" >doc.kml
 		echo "${LOC_KML}" >>doc.kml
 		echo "${INF_KML}" >>doc.kml
 		echo "${SVC_KML}" >>doc.kml
-		#echo "${ADJ_KML}" >>doc.kml
 		echo "${KML_FOOT}" >>doc.kml
 		echo "BUILDING KMZ"
 		MAKE_FILE
 		echo "MOVING FILE"
-    move ${OUTPUTNAME}.kmz ${OUTPUT_DIR}
-		echo "UPDATING DB"
-    #need to write this
+    mv ${OUTPUTNAME}.kmz ${OUTPUT_DIR}
+		if [[ ${NOUPDATE} = 0 ]]
+			then
+			echo "UPDATING DB"
+    	UPDATE_DB
+			else
+			echo "NOT UPDATING DB"
+		fi
 		echo "DONE"
 	elif (( $(echo "${array[4]} > 50.0000"|bc -l) )) &&  (( $(echo "${array[4]} < 54.0000" |bc -l) ))
 		then
