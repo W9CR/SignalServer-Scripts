@@ -168,7 +168,7 @@ function INTERFERENCE {
 SUFFIX=${SUFFIX_INF}
 
 time nice /usr/local/bin/signalserver -sdf $SDFDIR -rxh 1.83 -rxg 2.15 -m -pe 3 -cl 3 -te 3 -R $DISTANCE -res 600 \
-        -pm 1 -rel $REL_INF -f $FREQ -conf $CONF -color $COLOR_INF -rt ${CRITERIA_INF} -dbg -lat $LAT -lon $LON -txh $TXH \
+        -pm 1 -rel $REL_INF -f $FREQ -conf $CONF -color $COLOR_INF -rt ${CRITERIA_INT} -dbg -lat $LAT -lon $LON -txh $TXH \
         -erp $ERP -o $OUTPUTNAME 2>&1 |
 while read line
         do
@@ -212,7 +212,7 @@ EOF
 }
 
 function ADJACENT {
-
+#this function is only used if there's a single adjacency
 
 SUFFIX=${SUFFIX_ADJ}
 
@@ -260,10 +260,111 @@ EOF
 )"
 }
 
+
+function ADJACENT_1 {
+#this function is only used 146-148 if TX is 7.5 KHz to 7.5 KHz
+
+SUFFIX=${SUFFIX_ADJ1}
+
+time nice /usr/local/bin/signalserver -sdf $SDFDIR -rxh 1.83 -rxg 2.15 -m -pe 3 -cl 3 -te 3 -R $DISTANCE -res 600 \
+        -pm 1 -rel ${REL_ADJ1} -f ${FREQ} -conf ${CONF} -color ${COLOR_ADJ1} -rt ${CRITERIA_ADJ1} -dbg -lat $LAT -lon $LON -txh $TXH \
+        -erp $ERP -o $OUTPUTNAME 2>&1 |
+while read line
+        do
+        echo ${line}
+        if [[ ${line} == \|* ]]
+                then
+                while IFS='|' read -ra coords
+                do
+                        north_adj1=${coords[1]}
+                        east_adj1=${coords[2]}
+                        south_adj1=${coords[3]}
+                        west_adj1=${coords[4]}
+                done <<< ${line}
+        fi
+done
+# to resize, add: -resize 7000x7000\>
+echo NAME: ${OUTPUTNAME}_${SUFFIX}
+filename_adj1=${OUTPUTNAME}_${SUFFIX}.png
+echo FILENAME: ${filename_adj1}
+convert $OUTPUTNAME.ppm -transparent white ${filename_adj1}
+rm $OUTPUTNAME.ppm
+
+echo filename is: ${filename_adj1} coords are ${north_adj1} ${east_adj1} ${south_adj1} ${west_adj1}
+
+ADJ_KML1="$(cat << EOF 
+<GroundOverlay>
+    <name>${SUFFIX} ${FREQ} ${CALL}</name>
+    <color>a0ffffff</color>
+    <Icon>
+        <href>${filename_adj1}</href>
+    </Icon>
+    <LatLonBox>
+        <north>${north_adj1}</north>
+        <east>${east_adj1}</east>
+        <south>${south_adj1}</south>
+        <west>${west_adj1}</west>
+    </LatLonBox>
+</GroundOverlay>
+EOF
+)"
+}
+
+
+function ADJACENT_2 {
+#this function is only used from 146-148 if TX is 7.5 KHz Spliter adjacent to a 15KHz Wide Band
+
+SUFFIX=${SUFFIX_ADJ2}
+
+time nice /usr/local/bin/signalserver -sdf $SDFDIR -rxh 1.83 -rxg 2.15 -m -pe 3 -cl 3 -te 3 -R $DISTANCE -res 600 \
+        -pm 1 -rel ${REL_ADJ2} -f ${FREQ} -conf ${CONF} -color ${COLOR_ADJ2} -rt ${CRITERIA_ADJ2} -dbg -lat $LAT -lon $LON -txh $TXH \
+        -erp $ERP -o $OUTPUTNAME 2>&1 |
+while read line
+        do
+        echo ${line}
+        if [[ ${line} == \|* ]]
+                then
+                while IFS='|' read -ra coords
+                do
+                        north_adj2=${coords[1]}
+                        east_adj2=${coords[2]}
+                        south_adj2=${coords[3]}
+                        west_adj2=${coords[4]}
+                done <<< ${line}
+        fi
+done
+# to resize, add: -resize 7000x7000\>
+echo NAME: ${OUTPUTNAME}_${SUFFIX}
+filename_adj2=${OUTPUTNAME}_${SUFFIX}.png
+echo FILENAME: ${filename_adj2}
+convert $OUTPUTNAME.ppm -transparent white ${filename_adj2}
+rm $OUTPUTNAME.ppm
+
+echo filename is: ${filename_adj2} coords are ${north_adj2} ${east_adj2} ${south_adj2} ${west_adj2}
+
+ADJ_KML2="$(cat << EOF 
+<GroundOverlay>
+    <name>${SUFFIX} ${FREQ} ${CALL}</name>
+    <color>a0ffffff</color>
+    <Icon>
+        <href>${filename_adj2}</href>
+    </Icon>
+    <LatLonBox>
+        <north>${north_adj2}</north>
+        <east>${east_adj2}</east>
+        <south>${south_adj2}</south>
+        <west>${west_adj2}</west>
+    </LatLonBox>
+</GroundOverlay>
+EOF
+)"
+}
+
+
 function MAKE_FILE {
 zip ${OUTPUTNAME}.zip ${filename_svc} ${filename_inf} ${filename_adj} ${filename_adj1} ${filename_adj2} doc.kml
 mv ${OUTPUTNAME}.zip ${OUTPUTNAME}.kmz
-#rm ${filename_svc} ${filename_inf} ${filename_adj} ${filename_adj1} ${filename_adj2} doc.kml
+rm ${filename_svc} ${filename_inf} ${filename_adj} ${filename_adj1} ${filename_adj2} #doc.kml
 echo Generated ${OUTPUTNAME}.kmz
 }
 
@@ -283,9 +384,14 @@ LAT: ${LAT}		LON: ${LON}
 EM1: ${EM1}		EM2: ${EM2}
 Channel Size: ${CHAN_SIZE} kHz
 Service Criteria: ${CRITERIA_SVC} dBu (50,50)  
-Service Contour: 
-Interference Criteria: ${CRITERIA_INT} dBu (50,10)
-Interference Contour:
+Service Contour: ${SVC_RING} km
+Interference/Adjacent Criteria: ${CRITERIA_INT} dBu (50,10)
+Interference Contour: ${INT_RING} km
+Adjacent Contour: km 
+Adjacent-Narrow : km
+Adjacent-Wide 	: km
+Note: 
+Adjacent Contours are only used in certian cases.
 </pre>
 <br>
 <a href=https://plots.fasma.org>Plots of all Coordinated repeaters in FASMA Database</a>
@@ -309,7 +415,6 @@ function UPDATE_DB {
 	echo "$Query"
 	mysql import -e "${Query}" -NB 
 }
-	
 
 KML_HEAD=$(cat <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
@@ -324,10 +429,7 @@ KML_FOOT=$(cat <<EOF
 EOF
 )
 
-
-
 #this is the main loop for the program and the coordination logic
-
 
 while IFS='|' read -a array
 do 
@@ -361,12 +463,17 @@ MOD_NAME="${array[18]}"
 
 	if (( $(echo "${array[4]} > 29.5000"|bc -l) )) &&  (( $(echo "${array[4]} < 29.7000" |bc -l) ))
 		then
-		DISTANCE='30km' # Distance needs to be wider for lowband
+		DISTANCE='300km' # Distance needs to be wider for lowband
 		CRITERIA_SVC='31'
 		CRITERIA_INT='13'
 		OUTPUTNAME=${FREQ}_${CALL}_${CITY}_${ID} # This is be base name of the file
-		#The output directory 
-		OUTPUT_DIR="${BASE_DIR}/29"
+		if [[ ${array[9]} = 1 ]] 
+			then
+				#The output directory for coordinated repeaters
+				OUTPUT_DIR="${BASE_DIR}/29"
+			else 
+				OUTPUT_DIR="${BASE_DIR}/uncoordinated"
+		fi
 		echo NAME: ${OUTPUTNAME}
 		echo DISTANCE: ${DISTANCE}
 		echo SVC CRIT: ${CRITERIA_SVC}
@@ -397,42 +504,191 @@ MOD_NAME="${array[18]}"
 			echo "NOT UPDATING DB"
 		fi
 		echo "DONE"
+	#6 meters
 	elif (( $(echo "${array[4]} > 50.0000"|bc -l) )) &&  (( $(echo "${array[4]} < 54.0000" |bc -l) ))
 		then
-		DISTANCE='300km'
-		CRITERIA_SVC=31
-		CRITERIA_INT=13
-		echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference"
-		echo "# frequency is between 50 and 54 "
-
+		DISTANCE='300km' # Distance needs to be wider for lowband
+		CRITERIA_SVC='31'
+		CRITERIA_INT='13'
+		OUTPUTNAME=${FREQ}_${CALL}_${CITY}_${ID} # This is be base name of the file
+		if [[ ${array[9]} = 1 ]] 
+			then
+				#The output directory for coordinated repeaters
+				OUTPUT_DIR="${BASE_DIR}/50"
+			else 
+				OUTPUT_DIR="${BASE_DIR}/uncoordinated"
+		fi
+		echo NAME: ${OUTPUTNAME}
+		echo DISTANCE: ${DISTANCE}
+		echo SVC CRIT: ${CRITERIA_SVC}
+		echo INT CRIT: ${CRITERIA_INT}
+		echo DIR: ${OUTPUT_DIR}
+		echo "# frequency is between 50.0000 and 54.0000"
+		echo "DOING SERVICE"
+		SERVICE
+		echo "DOING INTERFERENCE"
+		INTERFERENCE
+		echo "BUILDING KML"
+		BUILD_LOC_KML
+		#make the doc.xml file
+		echo "${KML_HEAD}" >doc.kml
+		echo "${LOC_KML}" >>doc.kml
+		echo "${INF_KML}" >>doc.kml
+		echo "${SVC_KML}" >>doc.kml
+		echo "${KML_FOOT}" >>doc.kml
+		echo "BUILDING KMZ"
+		MAKE_FILE
+		echo "MOVING FILE"
+    mv ${OUTPUTNAME}.kmz ${OUTPUT_DIR}
+		if [[ ${NOUPDATE} = 0 ]]
+			then
+			echo "UPDATING DB"
+    	UPDATE_DB
+			else
+			echo "NOT UPDATING DB"
+		fi
+		echo "DONE"
 	elif (( $(echo "${array[4]} > 144.0000"|bc -l) )) &&  (( $(echo "${array[4]} < 146.0000" |bc -l) ))
 		then 
 		echo "# frequency is between 144 and 146"
 			if [[ ${CHAN_SIZE} == '20.000' ]] 
 			then
-				CRITERIA_SVC=37
-				CRITERIA_INT=19
-				echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference"
-				echo "# $CALL $FREQ is wideband $CHAN_SIZE"
+				DISTANCE='200km' # only model out to 200km
+				CRITERIA_SVC='37'
+				CRITERIA_INT='19'
+				OUTPUTNAME=${FREQ}_${CALL}_${CITY}_${ID} # This is be base name of the file
+				if [[ ${array[9]} = 1 ]] 
+					then
+						#The output directory for coordinated repeaters
+						OUTPUT_DIR="${BASE_DIR}/144"
+					else 
+						OUTPUT_DIR="${BASE_DIR}/uncoordinated"
+				fi
+				echo NAME: ${OUTPUTNAME}
+				echo DISTANCE: ${DISTANCE}
+				echo SVC CRIT: ${CRITERIA_SVC}
+				echo INT CRIT: ${CRITERIA_INT}
+				echo DIR: ${OUTPUT_DIR}
+				echo "DOING SERVICE"
+				SERVICE
+				echo "DOING INTERFERENCE"
+				INTERFERENCE
+				echo "BUILDING KML"
+				BUILD_LOC_KML
+				#make the doc.xml file
+				echo "${KML_HEAD}" >doc.kml
+				echo "${LOC_KML}" >>doc.kml
+				echo "${INF_KML}" >>doc.kml
+				echo "${SVC_KML}" >>doc.kml
+				echo "${KML_FOOT}" >>doc.kml
+				echo "BUILDING KMZ"
+				MAKE_FILE
+				echo "MOVING FILE"
+		    mv ${OUTPUTNAME}.kmz ${OUTPUT_DIR}
+				if [[ ${NOUPDATE} = 0 ]]
+					then
+						echo "UPDATING DB"
+    				UPDATE_DB
+					else
+						echo "NOT UPDATING DB"
+				fi
+				echo "DONE"
 
 			elif [[ $CHAN_SIZE == '10.000' ]] 
 			then 
+				# on a 10 khz channel we only need to model tx to adjacent if the signal is >8 KHz occupied bandwidth
 				#problem here, I'm only looking at emmision 1.  It should be the widest, but I don't like assuming it
 				case $EM1 in 
-					9K36F7W|9K80D7W|11K2F3E)
-					CRITERIA_SVC=37
-					CRITERIA_INT=19
-					CRITERIA_ADJ1=25
-					echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference, $CRITERIA_INT dBu (50,10 Adjacent."
-					echo "# $CALL $FREQ is Narrowband $CHAN_SIZE but $EM1 is wider than 8 KHz"
+					9K36F7W|9K80D7W|11K2F3E) #these emissions are >8 KHz
+					DISTANCE='200km' # only model out to 200km
+					CRITERIA_SVC='37'
+					CRITERIA_INT='19'
+					CRITERIA_ADJ='25'
+					OUTPUTNAME=${FREQ}_${CALL}_${CITY}_${ID} # This is be base name of the file
+					if [[ ${array[9]} = 1 ]] 
+						then
+							#The output directory for coordinated repeaters
+							OUTPUT_DIR="${BASE_DIR}/144"
+						else 
+							OUTPUT_DIR="${BASE_DIR}/uncoordinated"
+					fi
+					echo NAME: ${OUTPUTNAME}
+					echo DISTANCE: ${DISTANCE}
+					echo SVC CRIT: ${CRITERIA_SVC}
+					echo INT CRIT: ${CRITERIA_INT}
+					echo DIR: ${OUTPUT_DIR}
+					echo "DOING SERVICE"
+					SERVICE
+					echo "DOING INTERFERENCE"
+					INTERFERENCE
+					echo "DOING ADJACENT"
+					ADJACENT
+					echo "BUILDING KML"
+					BUILD_LOC_KML
+					#make the doc.xml file
+					echo "${KML_HEAD}" >doc.kml
+					echo "${LOC_KML}" >>doc.kml
+					echo "${INF_KML}" >>doc.kml
+					echo "${ADJ_KML}" >>doc.kml
+					echo "${SVC_KML}" >>doc.kml
+					echo "${KML_FOOT}" >>doc.kml
+					echo "BUILDING KMZ"
+					MAKE_FILE
+					echo "MOVING FILE"
+			    mv ${OUTPUTNAME}.kmz ${OUTPUT_DIR}
+					if [[ ${NOUPDATE} = 0 ]]
+						then
+							echo "UPDATING DB"
+    					UPDATE_DB
+						else
+							echo "NOT UPDATING DB"
+					fi
+					echo "DONE"
+
 					unset CRITERIA_ADJ1
 					;;
 					# adjacent not needed for <8 khz emissions      
 					150HA1A|2K80J3E|4K00F1E|6K00A3E|6K25F7W|7K60FXE|8K10F1E|8K30F1E)
-					CRITERIA_SVC=37
-					CRITERIA_INT=19
-					echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference"
-					echo "# $CALL $FREQ is Narrowband $CHAN_SIZE and $EM1 is narrower than 8 KHz"
+					DISTANCE='200km' # only model out to 200km
+					CRITERIA_SVC='37'
+					CRITERIA_INT='19'
+					OUTPUTNAME=${FREQ}_${CALL}_${CITY}_${ID} # This is be base name of the file
+					if [[ ${array[9]} = 1 ]] 
+						then
+							#The output directory for coordinated repeaters
+							OUTPUT_DIR="${BASE_DIR}/144"
+						else 
+							OUTPUT_DIR="${BASE_DIR}/uncoordinated"
+					fi
+					echo NAME: ${OUTPUTNAME}
+					echo DISTANCE: ${DISTANCE}
+					echo SVC CRIT: ${CRITERIA_SVC}
+					echo INT CRIT: ${CRITERIA_INT}
+					echo DIR: ${OUTPUT_DIR}
+					echo "DOING SERVICE"
+					SERVICE
+					echo "DOING INTERFERENCE"
+					INTERFERENCE
+					echo "BUILDING KML"
+					BUILD_LOC_KML
+					#make the doc.xml file
+					echo "${KML_HEAD}" >doc.kml
+					echo "${LOC_KML}" >>doc.kml
+					echo "${INF_KML}" >>doc.kml
+					echo "${SVC_KML}" >>doc.kml
+					echo "${KML_FOOT}" >>doc.kml
+					echo "BUILDING KMZ"
+					MAKE_FILE
+					echo "MOVING FILE"
+			    mv ${OUTPUTNAME}.kmz ${OUTPUT_DIR}
+					if [[ ${NOUPDATE} = 0 ]]
+						then
+							echo "UPDATING DB"
+ 							UPDATE_DB
+						else
+							echo "NOT UPDATING DB"
+					fi
+					echo "DONE"
 					;;
 					*)
 					echo "# $CALL $FREQ is Narrowband $CHAN_SIZE but some error >&2"
@@ -445,19 +701,107 @@ MOD_NAME="${array[18]}"
 		echo "# frequency is between 146 and 148"
 			if [[ $CHAN_SIZE == '15.000' ]] 
 			then
-				CRITERIA_SVC=37
-				CRITERIA_INT=19
 				echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference"
 				echo "# $CALL $FREQ is wideband $CHAN_SIZE"
+				DISTANCE='200km' # only model out to 200km
+				CRITERIA_SVC='37'
+				CRITERIA_ADJ='42'
+				CRITERIA_INT='19'
+				OUTPUTNAME=${FREQ}_${CALL}_${CITY}_${ID} # This is be base name of the file
+				if [[ ${array[9]} = 1 ]] 
+					then
+						#The output directory for coordinated repeaters
+						OUTPUT_DIR="${BASE_DIR}/144"
+					else 
+						OUTPUT_DIR="${BASE_DIR}/uncoordinated"
+				fi
+				echo NAME: ${OUTPUTNAME}
+				echo DISTANCE: ${DISTANCE}
+				echo SVC CRIT: ${CRITERIA_SVC}
+				echo INT CRIT: ${CRITERIA_INT}
+				echo DIR: ${OUTPUT_DIR}
+				echo "DOING SERVICE"
+				SERVICE
+				echo "DOING INTERFERENCE"
+				INTERFERENCE
+				echo "DOING ADJACENT"
+				ADJACENT
+				echo "BUILDING KML"
+				BUILD_LOC_KML
+				#make the doc.xml file
+				echo "${KML_HEAD}" >doc.kml
+				echo "${LOC_KML}" >>doc.kml
+				echo "${INF_KML}" >>doc.kml
+				echo "${ADJ_KML}" >>doc.kml
+				echo "${SVC_KML}" >>doc.kml
+				echo "${KML_FOOT}" >>doc.kml
+				echo "BUILDING KMZ"
+				MAKE_FILE
+				echo "MOVING FILE"
+		    mv ${OUTPUTNAME}.kmz ${OUTPUT_DIR}
+				if [[ ${NOUPDATE} = 0 ]]
+					then
+						echo "UPDATING DB"
+   					UPDATE_DB
+					else
+						echo "NOT UPDATING DB"
+				fi
+				echo "DONE"
+
+
 			elif [[ $CHAN_SIZE == '7.500' ]] 
 			then 
-				CRITERIA_SVC=37
-				CRITERIA_INT=19
-				CRITERIA_ADJ1=44
-				CRITERIA_ADJ2=25
+				# and here we need to model adj1 and adj2  fucking 7.5 KHz channels.  2 meters is so fucked.
 				echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference"
-				echo "# Narrow to Narrow adjacent is $CRITERIA_ADJ1 dBu (50,10), Narrow to Wide adjacent is $CRITERIA_ADJ2 dBu (50,10)"
 				echo "# $CALL $FREQ is wideband $CHAN_SIZE"
+				DISTANCE='200km' # only model out to 200km
+				CRITERIA_SVC='37'
+				CRITERIA_ADJ1='44'
+        CRITERIA_ADJ2='25'
+				CRITERIA_INT='19'
+				OUTPUTNAME=${FREQ}_${CALL}_${CITY}_${ID} # This is be base name of the file
+				if [[ ${array[9]} = 1 ]] 
+					then
+						#The output directory for coordinated repeaters
+						OUTPUT_DIR="${BASE_DIR}/144"
+					else 
+						OUTPUT_DIR="${BASE_DIR}/uncoordinated"
+				fi
+				echo NAME: ${OUTPUTNAME}
+				echo DISTANCE: ${DISTANCE}
+				echo SVC CRIT: ${CRITERIA_SVC}
+				echo INT CRIT: ${CRITERIA_INT}
+				echo DIR: ${OUTPUT_DIR}
+				echo "DOING SERVICE"
+				SERVICE
+				echo "DOING INTERFERENCE"
+				INTERFERENCE
+				echo "DOING ADJACENT_1"
+				ADJACENT_1
+        echo "DOING ADJACENT_2"
+        ADJACENT_2
+				echo "BUILDING KML"
+				BUILD_LOC_KML
+				#make the doc.xml file bottom most file is the top on display
+				echo "${KML_HEAD}" >doc.kml
+				echo "${LOC_KML}" >>doc.kml
+				echo "${INF_KML}" >>doc.kml
+				echo "${ADJ2_KML}" >>doc.kml
+				echo "${SVC_KML}" >>doc.kml 
+				echo "${ADJ1_KML}" >>doc.kml 
+				echo "${KML_FOOT}" >>doc.kml
+				echo "BUILDING KMZ"
+				MAKE_FILE
+				echo "MOVING FILE"
+		    mv ${OUTPUTNAME}.kmz ${OUTPUT_DIR}
+				if [[ ${NOUPDATE} = 0 ]]
+					then
+						echo "UPDATING DB"
+   					UPDATE_DB
+					else
+						echo "NOT UPDATING DB"
+				fi
+				echo "DONE"
 				unset CRITERIA_ADJ1 && unset CRITERIA_ADJ2
 			fi 
 
@@ -466,36 +810,151 @@ MOD_NAME="${array[18]}"
 		echo "# frequency is between 222 and 225"
 			if [[ $CHAN_SIZE == '20.000' ]] 
 				then
-					CRITERIA_SVC=37
-					CRITERIA_INT=19
-					echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference"
-					echo "# $CALL $FREQ is wideband $CHAN_SIZE"
+					# 222 is same as 2m below 146 mhz
+					DISTANCE='200km' # only model out to 200km
+					CRITERIA_SVC='37'
+					CRITERIA_INT='19'
+					OUTPUTNAME=${FREQ}_${CALL}_${CITY}_${ID} # This is be base name of the file
+					if [[ ${array[9]} = 1 ]] 
+						then
+							#The output directory for coordinated repeaters
+							OUTPUT_DIR="${BASE_DIR}/222"
+						else 
+							OUTPUT_DIR="${BASE_DIR}/uncoordinated"
+					fi
+					echo NAME: ${OUTPUTNAME}
+					echo DISTANCE: ${DISTANCE}
+					echo SVC CRIT: ${CRITERIA_SVC}
+					echo INT CRIT: ${CRITERIA_INT}
+					echo DIR: ${OUTPUT_DIR}
+					echo "DOING SERVICE"
+					SERVICE
+					echo "DOING INTERFERENCE"
+					INTERFERENCE
+					echo "BUILDING KML"
+					BUILD_LOC_KML
+					#make the doc.xml file
+					echo "${KML_HEAD}" >doc.kml
+					echo "${LOC_KML}" >>doc.kml
+					echo "${INF_KML}" >>doc.kml
+					echo "${SVC_KML}" >>doc.kml
+					echo "${KML_FOOT}" >>doc.kml
+					echo "BUILDING KMZ"
+					MAKE_FILE
+					echo "MOVING FILE"
+			    mv ${OUTPUTNAME}.kmz ${OUTPUT_DIR}
+					if [[ ${NOUPDATE} = 0 ]]
+						then
+							echo "UPDATING DB"
+ 		   				UPDATE_DB
+						else
+							echo "NOT UPDATING DB"
+					fi
+					echo "DONE"
 			elif [[ $CHAN_SIZE == '10.000' ]] 
 			then 
+				# on a 10 khz channel we only need to model tx to adjacent if the signal is >8 KHz occupied bandwidth
 				#problem here, I'm only looking at emmision 1.  It should be the widest, but I don't like assuming it
 				case $EM1 in 
-					9K36F7W|9K80D7W|11K2F3E)
-					CRITERIA_SVC=37
-					CRITERIA_INT=19
-					CRITERIA_ADJ1=25
-					echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference, $CRITERIA_INT dBu (50,10 Adjacent."
-					echo "# $CALL $FREQ is Narrowband $CHAN_SIZE but $EM1 is wider than 8 KHz"
-					unset CRITERIA_ADJ1
+					9K36F7W|9K80D7W|11K2F3E) #these emissions are >8 KHz
+					DISTANCE='200km' # only model out to 200km
+					CRITERIA_SVC='37'
+					CRITERIA_INT='19'
+					CRITERIA_ADJ='25'
+					OUTPUTNAME=${FREQ}_${CALL}_${CITY}_${ID} # This is be base name of the file
+					if [[ ${array[9]} = 1 ]] 
+						then
+							#The output directory for coordinated repeaters
+							OUTPUT_DIR="${BASE_DIR}/222"
+						else 
+							OUTPUT_DIR="${BASE_DIR}/uncoordinated"
+					fi
+					echo NAME: ${OUTPUTNAME}
+					echo DISTANCE: ${DISTANCE}
+					echo SVC CRIT: ${CRITERIA_SVC}
+					echo INT CRIT: ${CRITERIA_INT}
+					echo DIR: ${OUTPUT_DIR}
+					echo "DOING SERVICE"
+					SERVICE
+					echo "DOING INTERFERENCE"
+					INTERFERENCE
+					echo "DOING ADJACENT"
+					ADJACENT
+					echo "BUILDING KML"
+					BUILD_LOC_KML
+					#make the doc.xml file
+					echo "${KML_HEAD}" >doc.kml
+					echo "${LOC_KML}" >>doc.kml
+					echo "${INF_KML}" >>doc.kml
+					echo "${ADJ_KML}" >>doc.kml
+					echo "${SVC_KML}" >>doc.kml
+					echo "${KML_FOOT}" >>doc.kml
+					echo "BUILDING KMZ"
+					MAKE_FILE
+					echo "MOVING FILE"
+			    mv ${OUTPUTNAME}.kmz ${OUTPUT_DIR}
+					if [[ ${NOUPDATE} = 0 ]]
+						then
+							echo "UPDATING DB"
+    					UPDATE_DB
+						else
+							echo "NOT UPDATING DB"
+					fi
+					echo "DONE"
 					;;
 					# adjacent not needed for <8 khz emissions      
 					150HA1A|2K80J3E|4K00F1E|6K00A3E|6K25F7W|7K60FXE|8K10F1E|8K30F1E)
-					CRITERIA_SVC=37
-					CRITERIA_INT=19
-					echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference"
-					echo "# $CALL $FREQ is Narrowband $CHAN_SIZE and $EM1 is narrower than 8 KHz"
+					DISTANCE='200km' # only model out to 200km
+					CRITERIA_SVC='37'
+					CRITERIA_INT='19'
+					OUTPUTNAME=${FREQ}_${CALL}_${CITY}_${ID} # This is be base name of the file
+					if [[ ${array[9]} = 1 ]] 
+						then
+							#The output directory for coordinated repeaters
+							OUTPUT_DIR="${BASE_DIR}/222"
+						else 
+							OUTPUT_DIR="${BASE_DIR}/uncoordinated"
+					fi
+					echo NAME: ${OUTPUTNAME}
+					echo DISTANCE: ${DISTANCE}
+					echo SVC CRIT: ${CRITERIA_SVC}
+					echo INT CRIT: ${CRITERIA_INT}
+					echo DIR: ${OUTPUT_DIR}
+					echo "DOING SERVICE"
+					SERVICE
+					echo "DOING INTERFERENCE"
+					INTERFERENCE
+					echo "BUILDING KML"
+					BUILD_LOC_KML
+					#make the doc.xml file
+					echo "${KML_HEAD}" >doc.kml
+					echo "${LOC_KML}" >>doc.kml
+					echo "${INF_KML}" >>doc.kml
+					echo "${SVC_KML}" >>doc.kml
+					echo "${KML_FOOT}" >>doc.kml
+					echo "BUILDING KMZ"
+					MAKE_FILE
+					echo "MOVING FILE"
+			    mv ${OUTPUTNAME}.kmz ${OUTPUT_DIR}
+					if [[ ${NOUPDATE} = 0 ]]
+						then
+							echo "UPDATING DB"
+ 							UPDATE_DB
+						else
+							echo "NOT UPDATING DB"
+					fi
+					echo "DONE"
 					;;
 					*)
 					echo "# $CALL $FREQ is Narrowband $CHAN_SIZE but some error >&2"
 					exit 1
+					;;
 				esac
 			fi		 	 
+	
 	elif (( $(echo "${array[4]} > 420.0000"|bc -l) )) &&  (( $(echo "${array[4]} < 440.0000" |bc -l) )) && [[ $CHAN_SIZE == '100.000' ]]
 		then
+		#the 420-440 MHz 100 KHz Channels.  No Adjacent users, and liekly won't be omni
 		CRITERIA_SVC=40
 		CRITERIA_INT=22
 		echo "# frequency is between 420 and 440 and a 100 KHz Channel"
@@ -503,14 +962,18 @@ MOD_NAME="${array[18]}"
 		echo "# $CALL $FREQ is $CHAN_SIZE and emission is $EM1"
 	elif (( $(echo "${array[4]} > 420.0000"|bc -l) )) &&  (( $(echo "${array[4]} < 440.0000" |bc -l) )) && [[ $CHAN_SIZE == '8000.000' ]]
 		then
+		# this is the 420-440 MHz ATV users, 8 mhz channel, 25 dB SNR
 		CRITERIA_SVC=45
-		CRITERIA_INT=22
+		CRITERIA_INT=20
 		echo "# frequency is between 420 and 440 and a 8 MHz Channel"
 		echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference"
 		echo "# $CALL $FREQ is $CHAN_SIZE and emission is $EM1"
 
 	elif (( $(echo "${array[4]} > 420.0000"|bc -l) )) &&  (( $(echo "${array[4]} < 450.0000" |bc -l) ))
 		then
+			#440-450 is a 25 KHz wide and 12.5 KHz narrow, it doesn't need adjacent modeling in either case
+			# a 16khz FM wide band signal has 5.25 khz away from the egde of a 11.2 KHz NB repeater
+			# Digital is better 
 			if [[ $CHAN_SIZE == '25.000' ]] 
 			then
 				CRITERIA_SVC=39
