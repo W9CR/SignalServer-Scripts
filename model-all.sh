@@ -955,19 +955,98 @@ MOD_NAME="${array[18]}"
 	elif (( $(echo "${array[4]} > 420.0000"|bc -l) )) &&  (( $(echo "${array[4]} < 440.0000" |bc -l) )) && [[ $CHAN_SIZE == '100.000' ]]
 		then
 		#the 420-440 MHz 100 KHz Channels.  No Adjacent users, and liekly won't be omni
-		CRITERIA_SVC=40
-		CRITERIA_INT=22
+		DISTANCE='200km'
+		CRITERIA_SVC='40'
+		CRITERIA_INT='22'
 		echo "# frequency is between 420 and 440 and a 100 KHz Channel"
 		echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference"
 		echo "# $CALL $FREQ is $CHAN_SIZE and emission is $EM1"
+		OUTPUTNAME=${FREQ}_${CALL}_${CITY}_${ID} # This is be base name of the file
+		if [[ ${array[9]} = 1 ]] 
+			then
+				#The output directory for coordinated repeaters
+				OUTPUT_DIR="${BASE_DIR}/420"
+			else 
+				OUTPUT_DIR="${BASE_DIR}/uncoordinated"
+		fi
+		echo NAME: ${OUTPUTNAME}
+		echo DISTANCE: ${DISTANCE}
+		echo SVC CRIT: ${CRITERIA_SVC}
+		echo INT CRIT: ${CRITERIA_INT}
+		echo DIR: ${OUTPUT_DIR}
+		echo "DOING SERVICE"
+		SERVICE
+		echo "DOING INTERFERENCE"
+		INTERFERENCE
+		echo "BUILDING KML"
+		BUILD_LOC_KML
+		#make the doc.xml file
+		echo "${KML_HEAD}" >doc.kml
+		echo "${LOC_KML}" >>doc.kml
+		echo "${INF_KML}" >>doc.kml
+		echo "${SVC_KML}" >>doc.kml
+		echo "${KML_FOOT}" >>doc.kml
+		echo "BUILDING KMZ"
+		MAKE_FILE
+		echo "MOVING FILE"
+    mv ${OUTPUTNAME}.kmz ${OUTPUT_DIR}
+		if [[ ${NOUPDATE} = 0 ]]
+			then
+			echo "UPDATING DB"
+    	UPDATE_DB
+			else
+			echo "NOT UPDATING DB"
+		fi
+		echo "DONE"
+	
+
 	elif (( $(echo "${array[4]} > 420.0000"|bc -l) )) &&  (( $(echo "${array[4]} < 440.0000" |bc -l) )) && [[ $CHAN_SIZE == '8000.000' ]]
 		then
 		# this is the 420-440 MHz ATV users, 8 mhz channel, 25 dB SNR
-		CRITERIA_SVC=45
-		CRITERIA_INT=20
+		DISTANCE='200km'
+		CRITERIA_SVC='45'
+		CRITERIA_INT='22'
 		echo "# frequency is between 420 and 440 and a 8 MHz Channel"
 		echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference"
 		echo "# $CALL $FREQ is $CHAN_SIZE and emission is $EM1"
+		OUTPUTNAME=${FREQ}_${CALL}_${CITY}_${ID} # This is be base name of the file
+		if [[ ${array[9]} = 1 ]] 
+			then
+				#The output directory for coordinated repeaters
+				OUTPUT_DIR="${BASE_DIR}/420"
+			else 
+				OUTPUT_DIR="${BASE_DIR}/uncoordinated"
+		fi
+		echo NAME: ${OUTPUTNAME}
+		echo DISTANCE: ${DISTANCE}
+		echo SVC CRIT: ${CRITERIA_SVC}
+		echo INT CRIT: ${CRITERIA_INT}
+		echo DIR: ${OUTPUT_DIR}
+		echo "DOING SERVICE"
+		SERVICE
+		echo "DOING INTERFERENCE"
+		INTERFERENCE
+		echo "BUILDING KML"
+		BUILD_LOC_KML
+		#make the doc.xml file
+		echo "${KML_HEAD}" >doc.kml
+		echo "${LOC_KML}" >>doc.kml
+		echo "${INF_KML}" >>doc.kml
+		echo "${SVC_KML}" >>doc.kml
+		echo "${KML_FOOT}" >>doc.kml
+		echo "BUILDING KMZ"
+		MAKE_FILE
+		echo "MOVING FILE"
+    mv ${OUTPUTNAME}.kmz ${OUTPUT_DIR}
+		if [[ ${NOUPDATE} = 0 ]]
+			then
+			echo "UPDATING DB"
+    	UPDATE_DB
+			else
+			echo "NOT UPDATING DB"
+		fi
+		echo "DONE"
+	
 
 	elif (( $(echo "${array[4]} > 420.0000"|bc -l) )) &&  (( $(echo "${array[4]} < 450.0000" |bc -l) ))
 		then
@@ -976,58 +1055,284 @@ MOD_NAME="${array[18]}"
 			# Digital is better 
 			if [[ $CHAN_SIZE == '25.000' ]] 
 			then
-				CRITERIA_SVC=39
-				CRITERIA_INT=21
 				echo "# frequency is between 420 and 450 and a 25 KHz Channel"
-				echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference"
 				echo "# $CALL $FREQ is wideband $CHAN_SIZE"
-			elif [[ $CHAN_SIZE == '12.500' ]] 
+				DISTANCE='200km'
+				CRITERIA_SVC='39'
+				CRITERIA_INT='21'
+				OUTPUTNAME=${FREQ}_${CALL}_${CITY}_${ID} # This is be base name of the file
+				if [[ ${array[9]} = 1 ]] 
+					then
+						#The output directory for coordinated repeaters
+						OUTPUT_DIR="${BASE_DIR}/440"
+					else 
+						OUTPUT_DIR="${BASE_DIR}/uncoordinated"
+				fi
+				echo NAME: ${OUTPUTNAME}
+				echo DISTANCE: ${DISTANCE}
+				echo SVC CRIT: ${CRITERIA_SVC}
+				echo INT CRIT: ${CRITERIA_INT}
+				echo DIR: ${OUTPUT_DIR}
+				echo "DOING SERVICE"
+				SERVICE
+				echo "DOING INTERFERENCE"
+				INTERFERENCE
+				echo "BUILDING KML"
+				BUILD_LOC_KML
+				#make the doc.xml file
+				echo "${KML_HEAD}" >doc.kml
+				echo "${LOC_KML}" >>doc.kml
+				echo "${INF_KML}" >>doc.kml
+				echo "${SVC_KML}" >>doc.kml
+				echo "${KML_FOOT}" >>doc.kml
+				echo "BUILDING KMZ"
+				MAKE_FILE
+				echo "MOVING FILE"
+				mv ${OUTPUTNAME}.kmz ${OUTPUT_DIR}
+				if [[ ${NOUPDATE} = 0 ]]
+					then
+						echo "UPDATING DB"
+  		  	UPDATE_DB
+					else
+						echo "NOT UPDATING DB"
+				fi
+				echo "DONE"
+	
+		
+		elif [[ $CHAN_SIZE == '12.500' ]] 
 			then 
-				CRITERIA_SVC=39
-				CRITERIA_INT=21
 				echo "# frequency is between 420 and 450 and a 12.5 KHz Channel"
-				echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference"
 				echo "# $CALL $FREQ is NarrowBand $CHAN_SIZE"
+				DISTANCE='200km'
+				CRITERIA_SVC='39'
+				CRITERIA_INT='21'
+				OUTPUTNAME=${FREQ}_${CALL}_${CITY}_${ID} # This is be base name of the file
+				if [[ ${array[9]} = 1 ]] 
+					then
+						#The output directory for coordinated repeaters
+						OUTPUT_DIR="${BASE_DIR}/440"
+					else 
+						OUTPUT_DIR="${BASE_DIR}/uncoordinated"
+				fi
+				echo NAME: ${OUTPUTNAME}
+				echo DISTANCE: ${DISTANCE}
+				echo SVC CRIT: ${CRITERIA_SVC}
+				echo INT CRIT: ${CRITERIA_INT}
+				echo DIR: ${OUTPUT_DIR}
+				echo "DOING SERVICE"
+				SERVICE
+				echo "DOING INTERFERENCE"
+				INTERFERENCE
+				echo "BUILDING KML"
+				BUILD_LOC_KML
+				#make the doc.xml file
+				echo "${KML_HEAD}" >doc.kml
+				echo "${LOC_KML}" >>doc.kml
+				echo "${INF_KML}" >>doc.kml
+				echo "${SVC_KML}" >>doc.kml
+				echo "${KML_FOOT}" >>doc.kml
+				echo "BUILDING KMZ"
+				MAKE_FILE
+				echo "MOVING FILE"
+				mv ${OUTPUTNAME}.kmz ${OUTPUT_DIR}
+				if [[ ${NOUPDATE} = 0 ]]
+					then
+						echo "UPDATING DB"
+  		  	UPDATE_DB
+					else
+						echo "NOT UPDATING DB"
+				fi
+				echo "DONE"
 			fi		 	 
 
 
 	elif (( $(echo "${array[4]} > 902.0000"|bc -l) )) &&  (( $(echo "${array[4]} < 928.0000" |bc -l) ))
 		then
 			if [[ $CHAN_SIZE == '25.000' ]] 
-			then
-				CRITERIA_SVC=40
-				CRITERIA_INT=22
+				then
 				echo "# frequency is between 902 and 928 and a 25 KHz Channel"
-				echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference"
 				echo "# $CALL $FREQ is wideband $CHAN_SIZE"
-			elif [[ $CHAN_SIZE == '12.500' ]] 
+				DISTANCE='200km'
+				CRITERIA_SVC='40'
+				CRITERIA_INT='22'
+				OUTPUTNAME=${FREQ}_${CALL}_${CITY}_${ID} # This is be base name of the file
+				if [[ ${array[9]} = 1 ]] 
+					then
+						#The output directory for coordinated repeaters
+						OUTPUT_DIR="${BASE_DIR}/902"
+					else 
+						OUTPUT_DIR="${BASE_DIR}/uncoordinated"
+				fi
+				echo NAME: ${OUTPUTNAME}
+				echo DISTANCE: ${DISTANCE}
+				echo SVC CRIT: ${CRITERIA_SVC}
+				echo INT CRIT: ${CRITERIA_INT}
+				echo DIR: ${OUTPUT_DIR}
+				echo "DOING SERVICE"
+				SERVICE
+				echo "DOING INTERFERENCE"
+				INTERFERENCE
+				echo "BUILDING KML"
+				BUILD_LOC_KML
+				#make the doc.xml file
+				echo "${KML_HEAD}" >doc.kml
+				echo "${LOC_KML}" >>doc.kml
+				echo "${INF_KML}" >>doc.kml
+				echo "${SVC_KML}" >>doc.kml
+				echo "${KML_FOOT}" >>doc.kml
+				echo "BUILDING KMZ"
+				MAKE_FILE
+				echo "MOVING FILE"
+				mv ${OUTPUTNAME}.kmz ${OUTPUT_DIR}
+				if [[ ${NOUPDATE} = 0 ]]
+					then
+						echo "UPDATING DB"
+  		  	UPDATE_DB
+					else
+						echo "NOT UPDATING DB"
+				fi
+				echo "DONE"
+	
+		
+		elif [[ $CHAN_SIZE == '12.500' ]] 
 			then 
-				CRITERIA_SVC=40
-				CRITERIA_INT=22
 				echo "# frequency is between 902 and 928 and a 12.5 KHz Channel"
-				echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference"
 				echo "# $CALL $FREQ is NarrowBand $CHAN_SIZE"
-			fi		 	 
+				DISTANCE='200km'
+				CRITERIA_SVC='40'
+				CRITERIA_INT='22'
+				OUTPUTNAME=${FREQ}_${CALL}_${CITY}_${ID} # This is be base name of the file
+				if [[ ${array[9]} = 1 ]] 
+					then
+						#The output directory for coordinated repeaters
+						OUTPUT_DIR="${BASE_DIR}/902"
+					else 
+						OUTPUT_DIR="${BASE_DIR}/uncoordinated"
+				fi
+				echo NAME: ${OUTPUTNAME}
+				echo DISTANCE: ${DISTANCE}
+				echo SVC CRIT: ${CRITERIA_SVC}
+				echo INT CRIT: ${CRITERIA_INT}
+				echo DIR: ${OUTPUT_DIR}
+				echo "DOING SERVICE"
+				SERVICE
+				echo "DOING INTERFERENCE"
+				INTERFERENCE
+				echo "BUILDING KML"
+				BUILD_LOC_KML
+				#make the doc.xml file
+				echo "${KML_HEAD}" >doc.kml
+				echo "${LOC_KML}" >>doc.kml
+				echo "${INF_KML}" >>doc.kml
+				echo "${SVC_KML}" >>doc.kml
+				echo "${KML_FOOT}" >>doc.kml
+				echo "BUILDING KMZ"
+				MAKE_FILE
+				echo "MOVING FILE"
+				mv ${OUTPUTNAME}.kmz ${OUTPUT_DIR}
+				if [[ ${NOUPDATE} = 0 ]]
+					then
+						echo "UPDATING DB"
+  		  	UPDATE_DB
+					else
+						echo "NOT UPDATING DB"
+				fi
+				echo "DONE"
+		fi		 	 
 	elif (( $(echo "${array[4]} > 1240.0000"|bc -l) )) &&  (( $(echo "${array[4]} < 1300.0000" |bc -l) ))
 		then
 			if [[ $CHAN_SIZE == '50.000' ]] 
 			then
-				CRITERIA_SVC=40
-				CRITERIA_INT=22
 				echo "# frequency is between 1240 and 1300 and a 50 KHz Channel"
-				echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference"
 				echo "# $CALL $FREQ is wideband $CHAN_SIZE"
+				DISTANCE='200km'
+				CRITERIA_SVC='40'
+				CRITERIA_INT='22'
+				OUTPUTNAME=${FREQ}_${CALL}_${CITY}_${ID} # This is be base name of the file
+				if [[ ${array[9]} = 1 ]] 
+					then
+						#The output directory for coordinated repeaters
+						OUTPUT_DIR="${BASE_DIR}/1240"
+					else 
+						OUTPUT_DIR="${BASE_DIR}/uncoordinated"
+				fi
+				echo NAME: ${OUTPUTNAME}
+				echo DISTANCE: ${DISTANCE}
+				echo SVC CRIT: ${CRITERIA_SVC}
+				echo INT CRIT: ${CRITERIA_INT}
+				echo DIR: ${OUTPUT_DIR}
+				echo "DOING SERVICE"
+				SERVICE
+				echo "DOING INTERFERENCE"
+				INTERFERENCE
+				echo "BUILDING KML"
+				BUILD_LOC_KML
+				#make the doc.xml file
+				echo "${KML_HEAD}" >doc.kml
+				echo "${LOC_KML}" >>doc.kml
+				echo "${INF_KML}" >>doc.kml
+				echo "${SVC_KML}" >>doc.kml
+				echo "${KML_FOOT}" >>doc.kml
+				echo "BUILDING KMZ"
+				MAKE_FILE
+				echo "MOVING FILE"
+				mv ${OUTPUTNAME}.kmz ${OUTPUT_DIR}
+				if [[ ${NOUPDATE} = 0 ]]
+					then
+						echo "UPDATING DB"
+  		  	UPDATE_DB
+					else
+						echo "NOT UPDATING DB"
+				fi
+				echo "DONE"
+			
 			elif [[ $CHAN_SIZE == '100.000' ]] 
 			then 
-				CRITERIA_SVC=40
-				CRITERIA_INT=22
 				echo "# frequency is between 1240 and 1300 and a 100 KHz Channel"
-				echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference"
-				echo "# $CALL $FREQ is NarrowBand $CHAN_SIZE"
+				echo "# $CALL $FREQ $CHAN_SIZE"
+				DISTANCE='200km'
+				CRITERIA_SVC='40'
+				CRITERIA_INT='22'
+				OUTPUTNAME=${FREQ}_${CALL}_${CITY}_${ID} # This is be base name of the file
+				if [[ ${array[9]} = 1 ]] 
+					then
+						#The output directory for coordinated repeaters
+						OUTPUT_DIR="${BASE_DIR}/1240"
+					else 
+						OUTPUT_DIR="${BASE_DIR}/uncoordinated"
+				fi
+				echo NAME: ${OUTPUTNAME}
+				echo DISTANCE: ${DISTANCE}
+				echo SVC CRIT: ${CRITERIA_SVC}
+				echo INT CRIT: ${CRITERIA_INT}
+				echo DIR: ${OUTPUT_DIR}
+				echo "DOING SERVICE"
+				SERVICE
+				echo "DOING INTERFERENCE"
+				INTERFERENCE
+				echo "BUILDING KML"
+				BUILD_LOC_KML
+				#make the doc.xml file
+				echo "${KML_HEAD}" >doc.kml
+				echo "${LOC_KML}" >>doc.kml
+				echo "${INF_KML}" >>doc.kml
+				echo "${SVC_KML}" >>doc.kml
+				echo "${KML_FOOT}" >>doc.kml
+				echo "BUILDING KMZ"
+				MAKE_FILE
+				echo "MOVING FILE"
+				mv ${OUTPUTNAME}.kmz ${OUTPUT_DIR}
+				if [[ ${NOUPDATE} = 0 ]]
+					then
+						echo "UPDATING DB"
+  		  	UPDATE_DB
+					else
+						echo "NOT UPDATING DB"
+				fi
+				echo "DONE"
+			fi
+		fi			 	 
 	else echo frequency ${array[4]} of record number ${array[4]} is out of bounds
-	fi
-fi
-
 done < "$TMP_FILE"
 # rm "$TMP_FILE"
 
@@ -1038,14 +1343,5 @@ done < "$TMP_FILE"
 #       or how namespaces work in bash or that you could have function calls in bash
 #
 
-
-#echo "${KML_HEAD}" >doc.kml
-#echo "${LOC_KML}" >>doc.kml
-#echo "${INF_KML}" >>doc.kml
-#echo "${SVC_KML}" >>doc.kml
-#echo "${ADJ_KML}" >>doc.kml
-#echo "${KML_FOOT}" >>doc.kml
-
-#make_file
 
 exit
