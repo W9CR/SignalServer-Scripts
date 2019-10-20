@@ -39,7 +39,7 @@ NOUPDATE='0'
 # -model even if modeled flag is set in db
 # -noupdate don't update db
 # frequency range -flow 144.0000 -fhigh 146.0000
-# 
+# -scandb scan the db for models needing to be built and process them
 
 POSITIONAL=()
 while [[ $# -gt 0 ]]
@@ -57,6 +57,14 @@ while [[ $# -gt 0 ]]
 		;;
 		-noupdate)
 		NOUPDATE='1'
+		shift # past argument=value
+		;;
+		-scandb)
+		SCANDB='1'
+		shift # past argument=value
+		;;
+		-modeled)
+		MODELED='1'
 		shift # past argument=value
 		;;
 		-flow)
@@ -79,6 +87,23 @@ set -- "${POSITIONAL[@]}" # restore positional parameters
 
 #Below is run to match the DB
 
+if [[ ${SCANDB} = '1' ]]
+	then
+		echo "SCANNING DATABASE FOR CHANGES"
+	  Query="SELECT Latitude, Longitude, antenna_Height_Meters , ERP,  Output_frequency, 
+		REPLACE(Repeater_city, ' ','-') AS City, Repeater_callsign,  emission_1, emission_2, 
+		COORDINATED, chan_Size_kHz, record_ID, Service_Ring_km, Interference_Ring_km, adj1_ring_km, adj2_ring_km, modeled, model_Required, model_Name
+		FROM filemaker  WHERE model_Required = '1' ;"
+	  echo "$Query"
+	  mysql import -e "$Query" -NB | tr '\t' '|' >"$TMP_FILE" 
+fi
+
+if [[ ${MODELED} = '1' ]]
+	then
+		echo "ignore modeled ones"
+		modeled=" AND modeled = '0'"
+fi
+
 if [[ ! -z ${FREQ_LOW} && ! -z ${FREQ_HIGH} ]] 
 then
 	echo FREQ_LOW \"${FREQ_LOW}\"
@@ -86,7 +111,7 @@ then
 	Query="SELECT Latitude, Longitude, antenna_Height_Meters , ERP,  Output_frequency, 
   REPLACE(Repeater_city, ' ','-') AS City, Repeater_callsign,  emission_1, emission_2, 
   COORDINATED, chan_Size_kHz, record_ID, Service_Ring_km, Interference_Ring_km, adj1_ring_km, adj2_ring_km, modeled, model_Required, model_Name
-  FROM filemaker  WHERE Output_frequency BETWEEN '${FREQ_LOW}' AND '${FREQ_HIGH}' AND COORDINATED = '1' 
+  FROM filemaker  WHERE Output_frequency BETWEEN '${FREQ_LOW}' AND '${FREQ_HIGH}' AND COORDINATED = '1'  ${modeled}
   ORDER BY  Output_frequency ;"
 	echo "$Query"
 	mysql import -e "$Query" -NB | tr '\t' '|' >"$TMP_FILE"
