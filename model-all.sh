@@ -392,6 +392,13 @@ mv ${OUTPUTNAME}.zip ${OUTPUTNAME}.kmz
 rm ${filename_svc} ${filename_inf} ${filename_adj} ${filename_adj1} ${filename_adj2} #doc.kml
 echo Generated ${OUTPUTNAME}.kmz
 }
+function UNSET {
+unset filename_svc 
+unset filename_inf 
+unset filename_adj 
+unset filename_adj1 
+unset filename_adj2 
+}
 
 #this function builds the placemark part of the KML.  
 function BUILD_LOC_KML {
@@ -528,6 +535,7 @@ MOD_NAME="${array[18]}"
 			else
 			echo "NOT UPDATING DB"
 		fi
+		UNSET
 		echo "DONE"
 	#6 meters
 	elif (( $(echo "${array[4]} > 50.0000"|bc -l) )) &&  (( $(echo "${array[4]} < 54.0000" |bc -l) ))
@@ -572,6 +580,7 @@ MOD_NAME="${array[18]}"
 			else
 			echo "NOT UPDATING DB"
 		fi
+		UNSET	
 		echo "DONE"
 	elif (( $(echo "${array[4]} > 144.0000"|bc -l) )) &&  (( $(echo "${array[4]} < 146.0000" |bc -l) ))
 		then 
@@ -617,6 +626,7 @@ MOD_NAME="${array[18]}"
 					else
 						echo "NOT UPDATING DB"
 				fi
+				UNSET
 				echo "DONE"
 
 			elif [[ $CHAN_SIZE == '10.000' ]] 
@@ -668,6 +678,7 @@ MOD_NAME="${array[18]}"
 						else
 							echo "NOT UPDATING DB"
 					fi
+					UNSET
 					echo "DONE"
 
 					unset CRITERIA_ADJ1
@@ -713,6 +724,7 @@ MOD_NAME="${array[18]}"
 						else
 							echo "NOT UPDATING DB"
 					fi
+					UNSET
 					echo "DONE"
 					;;
 					*)
@@ -771,6 +783,7 @@ MOD_NAME="${array[18]}"
 					else
 						echo "NOT UPDATING DB"
 				fi
+				UNSET
 				echo "DONE"
 
 
@@ -826,6 +839,7 @@ MOD_NAME="${array[18]}"
 					else
 						echo "NOT UPDATING DB"
 				fi
+				UNSET
 				echo "DONE"
 				unset CRITERIA_ADJ1 && unset CRITERIA_ADJ2
 			fi 
@@ -875,6 +889,7 @@ MOD_NAME="${array[18]}"
 						else
 							echo "NOT UPDATING DB"
 					fi
+					UNSET
 					echo "DONE"
 			elif [[ $CHAN_SIZE == '10.000' ]] 
 			then 
@@ -925,6 +940,7 @@ MOD_NAME="${array[18]}"
 						else
 							echo "NOT UPDATING DB"
 					fi
+					UNSET
 					echo "DONE"
 					;;
 					# adjacent not needed for <8 khz emissions      
@@ -968,6 +984,7 @@ MOD_NAME="${array[18]}"
 						else
 							echo "NOT UPDATING DB"
 					fi
+					UNSET
 					echo "DONE"
 					;;
 					*)
@@ -1022,6 +1039,7 @@ MOD_NAME="${array[18]}"
 			else
 			echo "NOT UPDATING DB"
 		fi
+		UNSET
 		echo "DONE"
 	
 
@@ -1070,6 +1088,7 @@ MOD_NAME="${array[18]}"
 			else
 			echo "NOT UPDATING DB"
 		fi
+		UNSET
 		echo "DONE"
 	
 
@@ -1121,6 +1140,7 @@ MOD_NAME="${array[18]}"
 					else
 						echo "NOT UPDATING DB"
 				fi
+				UNSET
 				echo "DONE"
 		
 		elif [[ $CHAN_SIZE == '12.500' ]] 
@@ -1166,6 +1186,7 @@ MOD_NAME="${array[18]}"
 					else
 						echo "NOT UPDATING DB"
 				fi
+				UNSET
 				echo "DONE"
 			fi		 	 
 
@@ -1215,6 +1236,7 @@ MOD_NAME="${array[18]}"
 					else
 						echo "NOT UPDATING DB"
 				fi
+				UNSET
 				echo "DONE"
 	
 		
@@ -1261,6 +1283,7 @@ MOD_NAME="${array[18]}"
 					else
 						echo "NOT UPDATING DB"
 				fi
+				UNSET
 				echo "DONE"
 		fi		 	 
 	elif (( $(echo "${array[4]} > 1240.0000"|bc -l) )) &&  (( $(echo "${array[4]} < 1300.0000" |bc -l) ))
@@ -1308,6 +1331,7 @@ MOD_NAME="${array[18]}"
 					else
 						echo "NOT UPDATING DB"
 				fi
+				UNSET
 				echo "DONE"
 			
 			elif [[ $CHAN_SIZE == '100.000' ]] 
@@ -1353,6 +1377,7 @@ MOD_NAME="${array[18]}"
 					else
 						echo "NOT UPDATING DB"
 				fi
+				UNSET
 				echo "DONE"
 			fi
 					 	 
