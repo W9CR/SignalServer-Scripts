@@ -18,7 +18,7 @@ REL_INF='10'
 REL_ADJ='10'
 REL_ADJ1='10'
 REL_ADJ2='10'
-# Confidence 
+# Confidance 
 CONF='50'
 #Suffix for the type of file this is
 SUFFIX_SVC='Service'
