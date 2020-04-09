@@ -143,8 +143,10 @@ fi
 function SERVICE {
 
 SUFFIX=${SUFFIX_SVC}
-
-time nice /usr/local/bin/signalserver -sdf $SDFDIR -rxh 1.83 -rxg 2.15 -m -pe 3 -cl 3 -te 3 -R $DISTANCE -res 600 \
+echo "time nice /usr/local/bin/signalserver -sdf $SDFDIR -rxh 1.83 -rxg 2.15 -m -pe 3 -cl 3 -te 3 -R $DISTANCE -res 600  \
+      -pm 1 -rel $REL_SVC -f $FREQ -conf $CONF -color $COLOR_SVC -rt ${CRITERIA_SVC} -dbg -lat $LAT -lon $LON -txh $TXH \
+  -erp $ERP -o $OUTPUTNAME"
+time nice /usr/local/bin/signalserver -sdf $SDFDIR -rxh 1.83 -rxg 2.15 -m -pe 3 -cl 3 -te 3 -R $DISTANCE -res 600  \
      	-pm 1 -rel $REL_SVC -f $FREQ -conf $CONF -color $COLOR_SVC -rt ${CRITERIA_SVC} -dbg -lat $LAT -lon $LON -txh $TXH \
 	-erp $ERP -o $OUTPUTNAME 2>&1 | 
 while read line
@@ -1043,13 +1045,13 @@ MOD_NAME="${array[18]}"
 		echo "DONE"
 	
 
-	elif (( $(echo "${array[4]} > 420.0000"|bc -l) )) &&  (( $(echo "${array[4]} < 440.0000" |bc -l) )) && [[ $CHAN_SIZE == '8000.000' ]]
+	elif (( $(echo "${array[4]} > 420.0000"|bc -l) )) &&  (( $(echo "${array[4]} < 440.0000" |bc -l) )) && [[ $CHAN_SIZE == '6000.000' ]]
 		then
-		# this is the 420-440 MHz ATV users, 8 mhz channel, 25 dB SNR
+		# this is the 420-440 MHz ATV users, 6 mhz channel, 25 dB SNR
 		DISTANCE='200km'
 		CRITERIA_SVC='45'
 		CRITERIA_INT='22'
-		echo "# frequency is between 420 and 440 and a 8 MHz Channel"
+		echo "# frequency is between 420 and 440 and a 6 MHz Channel"
 		echo "# Criteria is $CRITERIA_SVC dBu (50,50) Service, $CRITERIA_INT dBu (50,10) Interference"
 		echo "# $CALL $FREQ is $CHAN_SIZE and emission is $EM1"
 		OUTPUTNAME=${FREQ}_${CALL}_${CITY}_${ID} # This is be base name of the file
