@@ -1,0 +1,49 @@
+Subject: ${CALL} ${FREQ} Coordination Information
+
+cc: ${TRUSTEE_EMAIL}
+
+Dear ${TRUSTEE},
+
+Your repeater, Record: ${ID}, Callsign: ${CALL}, on ${FREQ} has been identified as
+being off air during an audit of coordinated repeaters in the area.  The
+repeater was checked from an HT a 5w at approximately 30m of height within your
+repeater's service area.  Your listed CTCSS of: ${CTCSS_IN} was tried for the repeater
+in addition to the standard PL tones for the area.
+
+Please respond to this email with an update on this or let us know if your
+repeater is permanently off the air.  Under FASMA policy a repeater
+coordination may be revoked if the repeater is offline without explanation for
+60 days or more.  It is incumbent on the trustee to let FASMA know about any
+operational changes to the repeater as well.
+
+If any of the operational paramaters have changed, please submit an updated
+coordination form.  The PDF form and information may be found on our website
+here: https://fasma.org/coordination/
+
+Your repeaters information is below:
+
+Record ID      : ${ID}
+Callsign       : ${CALL}
+Output Freq    : ${FREQ} MHz
+Bandwidth      : ${CHAN_SIZE} KHz
+Emission 1     : ${EM1}
+Emission 2     : ${EM2}
+ERP            : ${ERP} Watts
+Antenna Height : ${AGL} Meters
+Access Tone In : ${CTCSS_IN} Hz 
+Access Tone Out: ${CTCSS_OUT} Hz
+DCS TONE       : ${DCS}
+County         : ${REPEATER_COUNTY}
+City           : ${REPEATER_CITY}
+Lat, Lon       : ${LAT}, ${LON}
+Holder         : ${HOLDER}
+Trustee        : ${TRUSTEE}
+Model          : ${MODEL_URL}
+
+Note the model can be loaded in google and is a standard format KML file.  This
+is automatically generated based on your location, antenna height, ERP and
+frequency.
+
+Thank you,
+Florida Amateur Spectrum Mangement Association, Inc.
+http://www.fasma.org
