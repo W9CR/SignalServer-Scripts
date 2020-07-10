@@ -82,11 +82,15 @@ do
         RHS="$(eval echo "\"$LHS\"")"
         line=${line//$LHS/$RHS}
     	done
-    echo "$line"
-done < "$TEXT_FILE"
+        TICKET="${TICKET}""${line}"$'\n' 
+done < "$TEXT_FILE" 
 }
 
 
+function SUBMIT_TICKET {
+echo "Submitting Ticket to FASMA"
+echo "$TICKET" | curl --data-urlencode content@- "https://rt.fasma.org/REST/1.0/ticket/new?user=${USER}&pass=${PASS}"
+}
 
 # Options 
 # -id database ID
@@ -108,6 +112,7 @@ while [[ $# -gt 0 ]]
 		-input) #input file name
 		TEXT_FILE="$2"
 		shift
+		shift
 		;;
 		-noupdate)
 		NOUPDATE='1'
@@ -117,19 +122,17 @@ while [[ $# -gt 0 ]]
 		SCANDB='1'
 		shift # past argument=value
 		;;
-		-modeled)
-		MODELED='1'
+		-send)
+		SEND='1'
 		shift # past argument=value
 		;;
-		-flow)
-		FREQ_LOW="$2"
+		-show)
+		SHOW='1'
 		shift # past argument=value
-		shift
 		;;
-		-fhigh)
-		FREQ_HIGH="$2"
+		-i)
+		INTERACTIVE='1'
 		shift
-		shift # past argument=value
 		;;
 		*)
 		POSITIONAL+=("$1") # save it in an array for later
@@ -141,11 +144,12 @@ set -- "${POSITIONAL[@]}" # restore positional parameters
 
 #Below is run to match the DB
 
-# model only one record ID
-
 if [[ ! -z ${RECORD_ID} ]]
 	then
 	Query_DB
+else
+	echo "ERROR: -id is missing record ID"
+	exit 255
 fi
 if [[ -z ${TEXT_FILE} ]]
 	then
@@ -153,8 +157,63 @@ if [[ -z ${TEXT_FILE} ]]
 	exit 255
 fi
 
+#check for RTUSER and RTPASS set
+if [[ -z "${RTUSER}" ]]; then
+	echo "ERROR: RTUSER is not set"
+	exit 255
+else
+	USER="${RTUSER}"
+fi
+if [[ -z "${RTPASSWD}" ]]; then
+        echo "ERROR: RTPASSWD is not set"
+        exit 255
+else
+        PASS="${RTPASSWD}"
+fi
 
 
+
+#below calls the functions
 
 READ_FILE
 COMPOSE_EMAIL
+
+if [[ ${INTERACTIVE} = '1' ]]; 
+then
+	while true; do
+		read -p "Do you wish to view the ticket?" yn
+		case $yn in
+			[Yy]* ) echo "${TICKET}" ; break;;
+			[Nn]* ) break;;
+			* ) echo "Please answer yes or no.";;
+		esac
+	done
+	while true; do 	
+		read -p "Do you wish to SUBMIT the Ticket?" yn
+		case $yn in
+			[Yy]* ) SUBMIT_TICKET; break;;
+			[Nn]* ) break;;
+			* ) echo "Please answer yes or no.";;
+		esac
+	
+	done
+exit 
+fi
+
+
+
+# IF Show is set
+if [[ ${SHOW} = '1' ]]
+	then
+	echo "${TICKET}"
+fi
+
+# If Submit is set
+if [[ ${SEND} = '1' ]]
+        then   
+        SUBMIT_TICKET
+fi
+
+
+exit
+
