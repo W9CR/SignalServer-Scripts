@@ -1,6 +1,34 @@
 #!/usr/bin/env php
 <?php
 
+/* 
+This program will generate a plain text formated record of FASMA coordination
+records for a record ID.  There are mutiple options presented:
+* Private Coordination Record - for sending to the trustee
+* Public Record for posting to website
+* PCN record for sending to adjacent states
+
+Copyright (C) 2020 Bryan Fields
+Bryan@bryanfields.net
++1-727-409-1194
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License Version 3, 
+as published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+--------------------------- Revision History ----------------------------------
+2020-08-15	bfields		Inital prototype, Private record only
+
+*/
+
 include('config.php');
 
 require 'vendor/autoload.php';
@@ -8,6 +36,8 @@ use GetOptionKit\OptionCollection;
 use GetOptionKit\OptionParser;
 use GetOptionKit\OptionPrinter\ConsoleOptionPrinter;
 
+// Specs needed here
+// Should 
 $specs = new OptionCollection;
 $specs->add('i|id:', 'Record ID' )
     ->isa('number');
@@ -206,8 +236,7 @@ if (is_null($row["model_Name"])) { $row["model_Name"] = "ERROR: MODEL MISSING";}
 if (is_null($row["Service_Ring_km"])) { $row["Service_Ring_km"] = "ERROR: SERVICE MISSING";}
 if (is_null($row["Interference_Ring_km"])) { $row["Interference_Ring_km"] = "ERROR: INTERFERENCE MISSING";}
 
-// Only set the next two if needed
-
+// Only set the next two if needed for the adjacent channels
 if (is_null($row["adj1_ring_km"]) == false) {  
 	$ADJ1 = <<<EOT
 Adjacent 1     : {$row["adj1_ring_km"]} km\n
@@ -219,11 +248,6 @@ if ((is_null($row["adj1_ring_km"]) == false) and (is_null($row["adj2_ring_km"]) 
 Adjacent 2     : {$row["adj2_ring_km"]} km\n
 EOT;
 }
-
-
-
-
-
 
 echo <<<EOT
 ====FASMA COORDINATION RECORD {$row["record_ID"]}====
@@ -263,29 +287,12 @@ NOTE: any change of antenna height, effective radiated power, modulation,
 frequency, bandwidth, location or callsign must be approved by FASMA, _PRIOR_ to
 the change.  Failure to follow this process will void this coordination.  
 
-The coverage model can be loaded in google and is a standard format KML file.  This
-is automatically generated based on your location, antenna height, ERP and
+The coverage model is a standard KML format and may be viewed in google earth.  
+This is automatically generated based on your location, antenna height, ERP and
 frequency.
 
 Florida Amateur Spectrum Mangement Association, Inc.
 http://www.fasma.org
 EOT;
-//Dear $row["Trustee_name"],
-//Your repeater, Record: $row['record_ID'], Callsign: $row["Repeater_callsign"], on $row ["Output_frequency"] is coordinated as follows:
-//EOT
 }
-
-
-
-
-
-
-
-/*
-foreach ($data as $row) {
-    echo $row['name']."<br />\n";
-}
-*/
-
-
 ?> 
