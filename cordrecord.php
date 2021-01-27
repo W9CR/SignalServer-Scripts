@@ -26,7 +26,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 --------------------------- Revision History ----------------------------------
 2020-08-15	bfields		Inital prototype, Private record only
-
+2021-01-26	bfields		public and private records working
 */
 
 include('config.php');
@@ -42,6 +42,17 @@ $specs = new OptionCollection;
 $specs->add('i|id:', 'Record ID' )
     ->isa('number');
 
+$specs->add('c|coord', 'Print only coordinated repeaters')
+	->isa('boolean') 
+	->defaultValue('false');
+
+$specs->add('p|public', 'Print public coordination record')
+        ->isa('boolean')
+        ->defaultValue('false');
+
+$specs->add('n|pcn', 'Print PCN coordination record')
+        ->isa('boolean')
+        ->defaultValue('false');
 
 $parser = new OptionParser($specs);
 $result = $parser->parse($argv);
@@ -49,6 +60,9 @@ $result = $parser->parse($argv);
 //var_dump($result);
 
 $id = $result->id;
+$private = $result->coord;
+$public = $result->public;
+$pcn = $result->pcn;
 
 //echo "$id \n";
 
@@ -89,21 +103,25 @@ if (is_null($row["Repeater_callsign"]) == false) {$row["Repeater_callsign"] = st
 if (is_null($row["Trustee_callsign"]) == false) {$row["Trustee_callsign"] = strtoupper($row["Trustee_callsign"]);}
 
 // Define the vars
-$CTCSS_RX = NULL;
-$CTCSS_TX = NULL;
-$DCS_CODE = NULL;
-$NXDN = NULL;
-$DMR = NULL;
-$P25NAC_TX =NULL;
-$P25NAC_RX = NULL;
-$ADJ1 = NULL;
-$ADJ2 = NULL;
+$row["CTCSS_RX_text"] = NULL;
+$row["CTCSS_TX_text"] = NULL;
+$row["DCS_CODE_text"] = NULL;
+$row["NXDN_text"] = NULL;
+$row["DMR_text"] = NULL;
+$row["P25NAC_TX_text"] = NULL;
+$row["P25NAC_RX_text"] = NULL;
+$row["ADJ1_text"] = NULL;
+$row["ADJ2_text"] = NULL;
 
+
+echo "$private\n";
 
 // Check if coordidnated, if not error if -c is set
 if ($row["COORDINATED"] == false ) {
 echo "ERROR: RECORD {$row["record_ID"]} not coordinated \n";
-exit (254);
+	if ($private == true) {
+		exit (254);
+	}
 }
 // check if PL/DCS is set if emission is analog (16k0f3e or 11k2f3e)
 // if not set, error 
@@ -111,25 +129,25 @@ if ( $row["emission_1"] == ('16K0F3E') or $row["emission_1"] == ('11K2F3E') or $
 //echo "we have a winner\n";
 // check if CTCSS is NULL and DCS is set to 0
 	if (is_null($row["CTCSS_IN"]) and $row["DCS"] == false) {
-	$CTCSS_RX = <<<EOT
+	$row["CTCSS_RX_text"] = <<<EOT
 Access Tone In : ERROR: TONE IS UNSET, PLEASE UPDATE RECORD!\n
 EOT;
 	} elseif (is_null($row["CTCSS_IN"]) and $row["DCS"] == true) {
-		unset($$CTCSS_RX);
+		unset($row["CTCSS_RX_text"]);
 	} else {
-	$CTCSS_RX = <<<EOT
+	$row["CTCSS_RX_text"] = <<<EOT
 Access Tone In : {$row["CTCSS_IN"]} Hz\n
 EOT;
 	}
  
 	if (is_null($row["CTCSS_OUT"]) and $row["DCS"] == false) {
-$CTCSS_RX = <<<EOT
+$row["CTCSS_TX_text"] = <<<EOT
 Access Tone Out: ERROR: TONE IS UNSET, PLEASE UPDATE RECORD!\n
 EOT;
 	} elseif (is_null($row["CTCSS_OUT"]) and $row["DCS"] == true) {
-		unset($$CTCSS_TX);
+		unset($$row["CTCSS_TX_text"]);
 	} else {
-	$CTCSS_TX = <<<EOT
+	$row["CTCSS_TX_text"] = <<<EOT
 Access Tone Out: {$row["CTCSS_OUT"]} Hz\n
 EOT;
 	}
@@ -138,11 +156,11 @@ EOT;
 // Check if DCS is true, print it
 if ($row["DCS"] == true) { 
 	if (is_null($row["DCS_CODE"])) {
-	$DCS_CODE = <<<EOT
+	$row["DCS_CODE_text"] = <<<EOT
 DCS CODE       : ERROR: CODE IS UNSET, PLEASE UPDATE RECORD!\n
 EOT;
 	} else {
-	$DCS_CODE = <<<EOT
+	$row["DCS_CODE_text"] = <<<EOT
 DCS CODE       : {$row["DCS_CODE"]}\n
 EOT;
 }
@@ -152,11 +170,11 @@ EOT;
 if ( $row["emission_1"] == ('4K00F1E') or $row["emission_2"] == ('4K00F1E') ) {
 // Check if RAN is blank
 	if (is_null($row["NXDN_RAN"])) {
-		$NXDN = <<<EOT
+		$row["NXDN_text"] = <<<EOT
 NXDN RAN       : ERROR: CODE IS UNSET, PLEASE UPDATE RECORD!\n
 EOT;
 	} else {
-		$NXDN = <<<EOT
+		$row["NXDN_text"] = <<<EOT
 NXDN RAN       : {$row["NXDN_RAN"]}\n
 EOT;
 	}
@@ -166,11 +184,11 @@ EOT;
 if ( $row["emission_1"] == ('7K60FXE') or $row["emission_2"] == ('7K60FXE') ) {
 // Check if code is unset
 	if (is_null($row["DMR1_COLOR_CODE"]) or is_null($row["DMR2_COLOR_CODE"])) {
-		$DMR = <<<EOT
+		$row["DMR_text"] = <<<EOT
 DMR CC         : ERROR: CC1 or CC2 IS UNSET, PLEASE UPDATE RECORD!\n
 EOT;
 	} else {
-		$DMR = <<<EOT
+		$row["DMR_text"] = <<<EOT
 DMR CC         : CC1 = {$row["DMR1_COLOR_CODE"]}, CC2 = {$row["DMR2_COLOR_CODE"]}\n
 EOT;
 	}
@@ -180,21 +198,21 @@ EOT;
 if ( $row["emission_1"] == ('8K10F1E') or $row["emission_2"] == ('8K10F1E') ) {
 // Check if code is unset
 	if (is_null($row["P25_NAC"])) {
-		$P25NAC_TX = <<<EOT
+		$row["P25NAC_TX_text"] = <<<EOT
 P25 NAC TX     : ERROR: P25 NAC UNSET, PLEASE UPDATE RECORD!\n
 EOT;
 	} else {
-		$P25NAC_TX = <<<EOT
+		$row["P25NAC_TX_text"] = <<<EOT
 P25 NAC TX     : 0x{$row["P25_NAC"]}\n
 EOT;
 	}
 
 	if (is_null($row["P25_NAC_IN"])) {
-		$P25NAC_RX = <<<EOT
+		$row["P25NAC_RX_text"] = <<<EOT
 P25 NAC RX     : ERROR: P25 NAC UNSET, PLEASE UPDATE RECORD!\n
 EOT;
 	} else {
-		$P25NAC_RX = <<<EOT
+		$row["P25NAC_RX_text"] = <<<EOT
 P25 NAC RX     : 0x{$row["P25_NAC_IN"]}\n
 EOT;
 	}
@@ -202,6 +220,9 @@ EOT;
 
 
 // Check that various required fields are set
+
+if (is_null($row["Coordination_date"])) {$row["Coordination_date"] = "ERROR: COORD DATE";}
+if (is_null($row["update_date"])) {$row["update_date"] = "ERROR: UPDATE DATE";}
 
 if (is_null($row["Holder_name"])) { $row["Holder_name"] = "ERROR: HOLDER NAME";}
 if (is_null($row["Holder_address"])) { $row["Holder_address"] = "ERROR: HOLDER ADDRESS";}
@@ -225,6 +246,7 @@ if (is_null($row["URL"])) { $row["URL"] = "No URL On File";}
 if (is_null($row["County"])) { $row["County"] = "ERROR: COUNTY";}
 if (is_null($row["Repeater_city"])) { $row["Repeater_city"] = "ERROR: CITY";}
 if (is_null($row["Repeater_callsign"])) { $row["Repeater_callsign"] = "ERROR: CALLSIGN";}
+if (is_null($row["Input_frequency"])) { $row["Input_frequency"] = "Input not defined";}
 if (is_null($row["Output_frequency"])) { $row["Output_frequency"] = "ERROR: OUTPUT FREQUENCY";}
 if (is_null($row["chan_Size_kHz"])) { $row["chan_Size_kHz"] = "ERROR: CHANNEL SIZE";}
 if (is_null($row["emission_1"])) { $row["emission_1"] = "ERROR: EMISSION";}
@@ -238,17 +260,20 @@ if (is_null($row["Interference_Ring_km"])) { $row["Interference_Ring_km"] = "ERR
 
 // Only set the next two if needed for the adjacent channels
 if (is_null($row["adj1_ring_km"]) == false) {  
-	$ADJ1 = <<<EOT
+	$row["ADJ1_text"] = <<<EOT
 Adjacent 1     : {$row["adj1_ring_km"]} km\n
 EOT;
 }
 // only print adj2 if adj1 is set
 if ((is_null($row["adj1_ring_km"]) == false) and (is_null($row["adj2_ring_km"]) == false)) {
-        $ADJ2 = <<<EOT
+        $row["ADJ2_text"] = <<<EOT
 Adjacent 2     : {$row["adj2_ring_km"]} km\n
 EOT;
 }
 
+function PrivateRecord($row) {
+
+// need to add in DATE in here too.
 echo <<<EOT
 ====FASMA COORDINATION RECORD {$row["record_ID"]}====
 
@@ -256,6 +281,8 @@ Dear {$row["Trustee_name"]},
 Your repeater, Record: {$row['record_ID']}, Callsign: {$row["Repeater_callsign"]}, on {$row["Output_frequency"]} is coordinated as follows:
 
 Record ID      : {$row["record_ID"]}
+Coord Date     : {$row["Coordination_date"]}
+Update Date    : {$row["update_date"]}
 Holder         : {$row["Holder_name"]}
 Holder Address : {$row["Holder_address"]}
                : {$row["Holder_city"]}, {$row["Holder_state"]} {$row["Holder_zip"]}
@@ -272,6 +299,7 @@ City           : {$row["Repeater_city"]}
 Lat, Lon       : {$row["Latitude"]}, {$row["Longitude"]}
 Callsign       : {$row["Repeater_callsign"]}
 Output Freq    : {$row["Output_frequency"]} MHz
+Input Freq     : {$row["Input_frequency"]} MHz
 Bandwidth      : {$row["chan_Size_kHz"]} KHz
 Emission 1     : {$row["emission_1"]}
 Emission 2     : {$row["emission_2"]}
@@ -279,10 +307,10 @@ ERP            : {$row["ERP"]} Watts, {$row['dBm']} dBm
 Antenna Model  : {$row["antennaModelCode"]}
 Antenna Height : {$row["antenna_Height_Meters"]} Meters
 Structure      : {$row["antStructType"]}
-{$CTCSS_TX}{$CTCSS_RX}{$DCS_CODE}{$NXDN}{$DMR}{$P25NAC_TX}{$P25NAC_RX}Model          : {$row["model_Name"]}
+{$row["CTCSS_TX_text"]}{$row["CTCSS_RX_text"]}{$row["DCS_CODE_text"]}{$row["NXDN_text"]}{$row["DMR_text"]}{$row["P25NAC_TX_text"]}{$row["P25NAC_RX_text"]}Model          : {$row["model_Name"]}
 Service        : {$row["Service_Ring_km"]} km
 Interference   : {$row["Interference_Ring_km"]} km
-{$ADJ1}{$ADJ2}
+{$row["ADJ1_text"]}{$row["ADJ2_text"]}
 NOTE: any change of antenna height, effective radiated power, modulation, 
 frequency, bandwidth, location or callsign must be approved by FASMA, _PRIOR_ to
 the change.  Failure to follow this process will void this coordination.  
@@ -291,8 +319,59 @@ The coverage model is a standard KML format and may be viewed in google earth.
 This is automatically generated based on your location, antenna height, ERP and
 frequency.
 
-Florida Amateur Spectrum Mangement Association, Inc.
+Florida Amateur Spectrum Management Association, Inc.
 http://www.fasma.org
+
 EOT;
+}
+
+if ($private == true){ 
+	PrivateRecord ($row);
+}
+
+
+
+function PublicRecord($row){ 
+echo <<<EOT
+====FASMA COORDINATION RECORD {$row["record_ID"]}====
+
+Record ID      : {$row["record_ID"]}
+Coord Date     : {$row["Coordination_date"]}
+Update Date    : {$row["update_date"]}
+Holder         : {$row["Holder_name"]}
+Trustee        : {$row["Trustee_name"]}, {$row["Trustee_callsign"]}
+URL            : {$row["URL"]}
+County         : {$row["County"]}
+City           : {$row["Repeater_city"]}
+Lat, Lon       : {$row["Latitude"]}, {$row["Longitude"]}
+Callsign       : {$row["Repeater_callsign"]}
+Output Freq    : {$row["Output_frequency"]} MHz
+Input Freq     : {$row["Input_frequency"]} MHz
+Bandwidth      : {$row["chan_Size_kHz"]} KHz
+Emission 1     : {$row["emission_1"]}
+Emission 2     : {$row["emission_2"]}
+ERP            : {$row["ERP"]} Watts, {$row['dBm']} dBm
+Antenna Height : {$row["antenna_Height_Meters"]} Meters
+{$row["CTCSS_TX_text"]}{$row["CTCSS_RX_text"]}{$row["DCS_CODE_text"]}{$row["NXDN_text"]}{$row["DMR_text"]}{$row["P25NAC_TX_text"]}{$row["P25NAC_RX_text"]}Model          : {$row["model_Name"]}
+Service        : {$row["Service_Ring_km"]} km
+Interference   : {$row["Interference_Ring_km"]} km
+{$row["ADJ1_text"]}{$row["ADJ2_text"]}
+The coverage model is a standard KML format and may be viewed in google earth.  
+This is automatically generated based on your location, antenna height, ERP and
+frequency.
+
+Florida Amateur Spectrum Management Association, Inc.
+http://www.fasma.org
+
+EOT;
+} 
+
+if ($public == true) {
+	PublicRecord($row);
+}
+
+
+
+
 }
 ?> 
