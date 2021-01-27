@@ -27,6 +27,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 --------------------------- Revision History ----------------------------------
 2020-08-15	bfields		Inital prototype, Private record only
 2021-01-26	bfields		public and private records working
+2021-01-27	bfields		PCN working
 */
 
 include('config.php');
@@ -119,7 +120,7 @@ echo "$private\n";
 // Check if coordidnated, if not error if -c is set
 if ($row["COORDINATED"] == false ) {
 echo "ERROR: RECORD {$row["record_ID"]} not coordinated \n";
-	if ($private == true) {
+	if ( ($private == true) || ($pcn == false) ){
 		exit (254);
 	}
 }
@@ -370,6 +371,40 @@ if ($public == true) {
 	PublicRecord($row);
 }
 
+function PriorCoordinationNotice($row){
+echo <<<EOT
+Greetings,
+
+I'm with FASMA and we are sending notice of proposed coordination for this repeater below.  
+
+As this is <200 km from the state line we are making a PCN notice regarding this repeater.  You may find the models for the service contour and interference contour below.  The kmz can be loaded natively in google earth.
+
+If more than one frequency is listed, you may respond with one which works best of multiple listed.  Your prompt response is requested.  
+
+Barring no objections in 15 business days, we will consider the notice approved
+
+=====BEGIN PCN DATA=====
+Record ID          : {$row["record_ID"]}
+City               : {$row["Repeater_city"]}
+Proposed frequency : PROPOSED FREQ
+Channel Bandwidth  : {$row["chan_Size_kHz"]} KHz
+Emission 1         : {$row["emission_1"]} 
+Emission 2         : {$row["emission_2"]}
+Antenna Model      : {$row["antennaModelCode"]}
+Antenna Height AGL : {$row["antenna_Height_Meters"]} Meters
+ERP                : {$row["ERP"]} Watts, {$row['dBm']} dBm
+Service Contour    : {$row["Service_Ring_km"]} km
+Interferer Contour : {$row["Interference_Ring_km"]} km
+{$row["ADJ1_text"]}{$row["ADJ2_text"]}Model              : {$row["model_Name"]}
+=====END PCN DATA=====
+
+Thank you for your assistance and 73,
+EOT;
+}
+
+if ($pcn == true) {
+        PriorCoordinationNotice($row);
+}
 
 
 
