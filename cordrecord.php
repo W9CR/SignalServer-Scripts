@@ -28,6 +28,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 2020-08-15	bfields		Inital prototype, Private record only
 2021-01-26	bfields		public and private records working
 2021-01-27	bfields		PCN working
+2021-01-28	bfields		Fixed PCN output missing lat/lon records
 */
 
 include('config.php');
@@ -386,6 +387,7 @@ Barring no objections in 15 business days, we will consider the notice approved
 =====BEGIN PCN DATA=====
 Record ID          : {$row["record_ID"]}
 City               : {$row["Repeater_city"]}
+Lat, Lon           : {$row["Latitude"]}, {$row["Longitude"]}
 Proposed frequency : PROPOSED FREQ
 Channel Bandwidth  : {$row["chan_Size_kHz"]} KHz
 Emission 1         : {$row["emission_1"]} 
