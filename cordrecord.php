@@ -55,7 +55,9 @@ $specs->add('p|public', 'Print public coordination record')
 $specs->add('n|pcn', 'Print PCN coordination record')
         ->isa('boolean')
         ->defaultValue('false');
-
+$specs->add('f|force', 'force printing non-coordinated repeaters')
+        ->isa('boolean')
+        ->defaultValue('false');
 $parser = new OptionParser($specs);
 $result = $parser->parse($argv);
 
@@ -65,6 +67,7 @@ $id = $result->id;
 $private = $result->coord;
 $public = $result->public;
 $pcn = $result->pcn;
+$force = $result->force;
 
 //echo "$id \n";
 
@@ -121,7 +124,7 @@ echo "$private\n";
 // Check if coordidnated, if not error if -c is set
 if ($row["COORDINATED"] == false ) {
 echo "ERROR: RECORD {$row["record_ID"]} not coordinated \n";
-	if ( ($private == true) || ($pcn == false) ){
+	if ( (($private == true) || ($pcn == false)) && ($force == false) ){
 		exit (254);
 	}
 }
