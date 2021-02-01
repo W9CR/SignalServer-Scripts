@@ -29,6 +29,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 2021-01-26	bfields		public and private records working
 2021-01-27	bfields		PCN working
 2021-01-28	bfields		Fixed PCN output missing lat/lon records
+2021-01-31 	bfields		Added Tx PO, and feedline info to private record
 */
 
 include('config.php');
@@ -262,6 +263,9 @@ if (is_null($row["antStructType"])) { $row["antStructType"] = "Not on File";}
 if (is_null($row["model_Name"])) { $row["model_Name"] = "ERROR: MODEL MISSING";}
 if (is_null($row["Service_Ring_km"])) { $row["Service_Ring_km"] = "ERROR: SERVICE MISSING";}
 if (is_null($row["Interference_Ring_km"])) { $row["Interference_Ring_km"] = "ERROR: INTERFERENCE MISSING";}
+if (is_null($row["Coax_Model"])) { $row["Coax_Model"] = "ERROR: COAX UNSET";}
+if (is_null($row["Coax_Length_Meters"])) { $row["Coax_Length_Meters"] = "ERROR: COAX LENGTH UNSET";}
+if (is_null($row["TxOutputWatts"])) { $row["TxOutputWatts"] = "ERROR: TX OUTPUT POWER UNSET";}
 
 // Only set the next two if needed for the adjacent channels
 if (is_null($row["adj1_ring_km"]) == false) {  
@@ -309,6 +313,9 @@ Bandwidth      : {$row["chan_Size_kHz"]} KHz
 Emission 1     : {$row["emission_1"]}
 Emission 2     : {$row["emission_2"]}
 ERP            : {$row["ERP"]} Watts, {$row['dBm']} dBm
+Power Out      : {$row["TxOutputWatts"]} Watts
+Coax Type      : {$row["Coax_Model"]}
+Coax Length    : {$row["Coax_Length_Meters"]} Meters 
 Antenna Model  : {$row["antennaModelCode"]}
 Antenna Height : {$row["antenna_Height_Meters"]} Meters
 Structure      : {$row["antStructType"]}
