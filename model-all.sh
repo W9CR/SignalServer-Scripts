@@ -1094,14 +1094,15 @@ MOD_NAME="${array[18]}"
 		echo "DONE"
 	
 
-	elif (( $(echo "${array[4]} > 420.0000"|bc -l) )) &&  (( $(echo "${array[4]} < 450.0000" |bc -l) ))
+	elif (( $(echo "${array[4]} > 420.0000"|bc -l) )) &&  (( $(echo "${array[4]} < 470.0000" |bc -l) ))
 		then
-			#440-450 is a 25 KHz wide and 12.5 KHz narrow, it doesn't need adjacent modeling in either case
+			#440-470 is a 25 KHz wide and 12.5 KHz narrow, it doesn't need adjacent modeling in either case
 			# a 16khz FM wide band signal has 5.25 khz away from the egde of a 11.2 KHz NB repeater
-			# Digital is better 
+			# Digital is better
+			# added this up to 470 MHz for gmrs modeling 
 			if [[ $CHAN_SIZE == '25.000' ]] 
 			then
-				echo "# frequency is between 420 and 450 and a 25 KHz Channel"
+				echo "# frequency is between 420 and 470 and a 25 KHz Channel"
 				echo "# $CALL $FREQ is wideband $CHAN_SIZE"
 				DISTANCE='200km'
 				CRITERIA_SVC='39'
@@ -1147,7 +1148,7 @@ MOD_NAME="${array[18]}"
 		
 		elif [[ $CHAN_SIZE == '12.500' ]] 
 			then 
-				echo "# frequency is between 420 and 450 and a 12.5 KHz Channel"
+				echo "# frequency is between 420 and 470 and a 12.5 KHz Channel"
 				echo "# $CALL $FREQ is NarrowBand $CHAN_SIZE"
 				DISTANCE='200km'
 				CRITERIA_SVC='39'
