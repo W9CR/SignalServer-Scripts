@@ -30,6 +30,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 2021-01-27	bfields		PCN working
 2021-01-28	bfields		Fixed PCN output missing lat/lon records
 2021-01-31 	bfields		Added Tx PO, and feedline info to private record
+2021-04-07	Bfields		Added the Orig Coord date and Coments to private record
 */
 
 include('config.php');
@@ -227,6 +228,7 @@ EOT;
 
 // Check that various required fields are set
 
+if (is_null($row["Original_coordination_date"])) {$row["Original_coordination_date"] = "ERROR: ORIG COORD DATE";}
 if (is_null($row["Coordination_date"])) {$row["Coordination_date"] = "ERROR: COORD DATE";}
 if (is_null($row["update_date"])) {$row["update_date"] = "ERROR: UPDATE DATE";}
 
@@ -266,6 +268,21 @@ if (is_null($row["Interference_Ring_km"])) { $row["Interference_Ring_km"] = "ERR
 if (is_null($row["Coax_Model"])) { $row["Coax_Model"] = "ERROR: COAX UNSET";}
 if (is_null($row["Coax_Length_Meters"])) { $row["Coax_Length_Meters"] = "ERROR: COAX LENGTH UNSET";}
 if (is_null($row["TxOutputWatts"])) { $row["TxOutputWatts"] = "ERROR: TX OUTPUT POWER UNSET";}
+// Check for the coments_all and format if exists
+if (!is_null($row["Coments_all"])) { 
+	$row["Coments_all"] = wordwrap($row["Coments_all"], 63, "\n"); 
+	$tok = strtok($row["Coments_all"], "\n");
+	$i=0; 
+	while ($tok !== false) { 
+	if ($i == 0) {$comments .= "Comments       : $tok \n"; $i++;}
+  		else  {$comments .= "               : $tok \n";}
+  	$tok = strtok("\n");
+	}
+	$row["Coments_all"] = $comments;
+}
+
+
+
 
 // Only set the next two if needed for the adjacent channels
 if (is_null($row["adj1_ring_km"]) == false) {  
@@ -292,6 +309,7 @@ Your repeater, Record: {$row['record_ID']}, Callsign: {$row["Repeater_callsign"]
 Record ID      : {$row["record_ID"]}
 Coord Date     : {$row["Coordination_date"]}
 Update Date    : {$row["update_date"]}
+Origional Cord : {$row["Original_coordination_date"]}
 Holder         : {$row["Holder_name"]}
 Holder Address : {$row["Holder_address"]}
                : {$row["Holder_city"]}, {$row["Holder_state"]} {$row["Holder_zip"]}
@@ -322,7 +340,7 @@ Structure      : {$row["antStructType"]}
 {$row["CTCSS_TX_text"]}{$row["CTCSS_RX_text"]}{$row["DCS_CODE_text"]}{$row["NXDN_text"]}{$row["DMR_text"]}{$row["P25NAC_TX_text"]}{$row["P25NAC_RX_text"]}Model          : {$row["model_Name"]}
 Service        : {$row["Service_Ring_km"]} km
 Interference   : {$row["Interference_Ring_km"]} km
-{$row["ADJ1_text"]}{$row["ADJ2_text"]}
+{$row["ADJ1_text"]}{$row["ADJ2_text"]}{$row["Coments_all"]}
 NOTE: any change of antenna height, effective radiated power, modulation, 
 frequency, bandwidth, location or callsign must be approved by FASMA, _PRIOR_ to
 the change.  Failure to follow this process will void this coordination.  
@@ -350,6 +368,7 @@ echo <<<EOT
 Record ID      : {$row["record_ID"]}
 Coord Date     : {$row["Coordination_date"]}
 Update Date    : {$row["update_date"]}
+Origional Cord : {$row["Original_coordination_date"]}
 Holder         : {$row["Holder_name"]}
 Trustee        : {$row["Trustee_name"]}, {$row["Trustee_callsign"]}
 URL            : {$row["URL"]}
