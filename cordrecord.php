@@ -33,6 +33,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 2021-04-07	bfields		Added the Orig Coord date and Coments to private record
 2021-04-07	bfields		Added the Feature field
 2021-05-05 	bfields		Fixed the formating of feature and comments to prevent dropping the first char
+2021-06-09	bfields		Fixed the PCN notice text formatting
 */
 
 include('config.php');
@@ -417,13 +418,18 @@ function PriorCoordinationNotice($row){
 echo <<<EOT
 Greetings,
 
-I'm with FASMA and we are sending notice of proposed coordination for this repeater below.  
+I'm with FASMA and we are sending notice of proposed coordination for this 
+repeater below.  
 
-As this is <200 km from the state line we are making a PCN notice regarding this repeater.  You may find the models for the service contour and interference contour below.  The kmz can be loaded natively in google earth.
+As this is <200 km from the state line we are making a PCN notice regarding
+this repeater.  You may find the models for the service contour and 
+interference contour below.  The kmz can be loaded natively in google earth.
 
-If more than one frequency is listed, you may respond with one which works best of multiple listed.  Your prompt response is requested.  
+If more than one frequency is listed, you may respond with one which works
+best of multiple listed.  Your prompt response is requested.  
 
-Barring no objections in 15 business days, we will consider the notice approved
+Barring no objections in 15 business days, we will consider the notice 
+approved.
 
 =====BEGIN PCN DATA=====
 Record ID          : {$row["record_ID"]}
